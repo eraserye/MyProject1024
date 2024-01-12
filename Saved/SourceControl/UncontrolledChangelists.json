@@ -1,0 +1,32 @@
+{
+	"version": 1,
+	"changelists": [
+		{
+			"guid": "00000000000000000000000000000000",
+			"description": "Default Uncontrolled Changelist",
+			"files": [
+				"E:/UEProject/MyProject1024/Content/StarterContent/Blueprints/Blueprint_CeilingLight.uasset",
+				"E:/UEProject/MyProject1024/Content/GameMode/CurMode.uasset",
+				"E:/UEProject/MyProject1024/Content/__ExternalActors__/level/Yebeng/0/OA/AZVEQINF24IXO0NT96C8YM.uasset",
+				"E:/UEProject/MyProject1024/Content/level/Yebeng.umap",
+				"E:/UEProject/MyProject1024/Content/AI/ParentAC.uasset",
+				"E:/UEProject/MyProject1024/Content/AI/MyGuideController.uasset",
+				"E:/UEProject/MyProject1024/Content/AICharacter/BornControiller.uasset",
+				"E:/UEProject/MyProject1024/Content/AICharacter/born.uasset",
+				"E:/UEProject/MyProject1024/Content/AICharacter/natural.uasset",
+				"E:/UEProject/MyProject1024/Content/hook/hookPoint.uasset",
+				"E:/UEProject/MyProject1024/Content/horse/bp/horse_bp.uasset",
+				"E:/UEProject/MyProject1024/Content/horse/bp/box.uasset",
+				"E:/UEProject/MyProject1024/Content/horse/bp/man_test.uasset",
+				"E:/UEProject/MyProject1024/Content/Director/k.uasset",
+				"E:/UEProject/MyProject1024/Content/Director/Director.uasset",
+				"E:/UEProject/MyProject1024/Content/Director/MyDirectorProxy.uasset",
+				"E:/UEProject/MyProject1024/Content/PlayerController/MyPC.uasset",
+				"E:/UEProject/MyProject1024/Content/PlayerController/CameraManager/CameraManager.uasset",
+				"E:/UEProject/MyProject1024/Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset",
+				"E:/UEProject/MyProject1024/Content/horse/anim/horse_anim.uasset",
+				"E:/UEProject/MyProject1024/Content/GameMode/MyMyProject1024GameModeBase.uasset"
+			]
+		}
+	]
+}
