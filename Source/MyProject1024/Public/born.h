@@ -35,7 +35,5 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "animation category")
 	float TurnAngle;
 
-	UAnimInstance* AnimInstance;
-	USkeletalMeshComponent* Mesh;
 	
 };

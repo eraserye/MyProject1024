@@ -34,18 +34,19 @@ void AAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AAICharacter::PerformRandomAction()
 {
+    EndAction();
+    EndMainAction();
     if (ActionFunctions.Num() > 0)
     {
         int32 Index = FMath::RandRange(0, ActionFunctions.Num() - 1);
         ActionFunctions[Index]();
         CurActionIndex = Index;
     }
-    EndMainAction();
 }
 
 void AAICharacter::EndAction()
 {
-    if (CurActionIndex < EndActionFunctions.Num())
+    if (CurActionIndex < EndActionFunctions.Num() && CurActionIndex >= 0)
     {
         EndActionFunctions[CurActionIndex]();
     }
@@ -59,3 +60,4 @@ void AAICharacter::MainAction()
 void AAICharacter::EndMainAction()
 {
 }
+

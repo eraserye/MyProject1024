@@ -12,81 +12,35 @@ AMyAIController::AMyAIController()
 
     RandomActionThresholdValue = 0.01;
 
-    
-    UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
     BlackboardComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComp"));
 
-    AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
+    RandomActionTime = 4.0f;
 
-    // 创建视觉感知配置
-    SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
-    if (SightConfig)
-    {
-        SightConfig->SightRadius = 500.0f;
-        SightConfig->LoseSightRadius = SightConfig->SightRadius + 50.0f;
-        SightConfig->PeripheralVisionAngleDegrees = 90.0f;
-        SightConfig->SetMaxAge(5.0f);
-
-        SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-        SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-        SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
-
-        AIPerceptionComponent->ConfigureSense(*SightConfig);
-    }
+    MainActionPriority = 0;
+    RandomActionPriority = 0;
 }
 
+//在ai controller子类中tick可以是固定的
 void AMyAIController::Tick(float DeltaTime) {
-    UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
-    //main action
-    //rotate
     if (BlackboardComp && BlackboardComp->GetKeyID("RunMainAction") != FBlackboard::InvalidKey)
     {
         RunMainAction = BlackboardComp->GetValueAsBool("RunMainAction");
     }
-    if (RunMainAction) {
-        FVector TargetDir = TargetLocation - Cast<ACharacter>(GetPawn())->GetActorLocation();
-        float delta = 0.01;
-        float RotateSpeed = 2.0f;
-        GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(), TargetDir.Rotation(), delta, RotateSpeed));
-        float TurnAngle = TargetDir.Rotation().Yaw - GetPawn()->GetActorRotation().Yaw;
-        if (TurnAngle > 180) {
-            TurnAngle = TurnAngle - 360;
-        }
-        else if (TurnAngle < -180) {
-            TurnAngle += 360;
-        }
-        if (Aborn* born = Cast<Aborn>(GetPawn())) {
-            born->TurnAngle = TurnAngle;
-        }
-    }
-    if (!RunMainAction && !RunRandomAction) {
-        RunMainAction = true;
-        float Radius = 400.0f;
-        float RandomAngle = FMath::FRandRange(-PI / 2.0f, PI / 2.0f);
-        FVector CharacterLoc = GetPawn()->GetActorLocation();
-        FRotator ActorRotation = GetPawn()->GetActorRotation();
-        //FRotator ActorYaw(0, ActorRotation.Yaw, 0);
-        FVector ActorForward = FRotationMatrix(ActorRotation).GetUnitAxis(EAxis::X);
-        FVector ActorRight = FRotationMatrix(ActorRotation).GetUnitAxis(EAxis::Y);
-        TargetLocation = Radius*ActorForward*cos(RandomAngle)+ Radius * ActorRight * sin(RandomAngle) + CharacterLoc;
-        if (BlackboardComp && BlackboardComp->GetKeyID("TargetLoc") != FBlackboard::InvalidKey)
-        {
-            Blackboard->SetValueAsVector("TargetLoc", TargetLocation);
-        }
-        if (BlackboardComp && BlackboardComp->GetKeyID("RunMainAction") != FBlackboard::InvalidKey)
-        {
-            Blackboard->SetValueAsBool("RunMainAction", true);
-        }
+
+    //main action is always true
+    bool bCanSeize = true;
+    if (MainActionPriority > RandomActionPriority) {
+        bCanSeize = !RunMainAction;
     }
 
     //random action
     float RandomValue = FMath::FRandRange(0.0f, 5.0f);
     //要避免多次设置 因为回重复进入分支,导致状态不正确结束 因此加入wait node
-    if (RandomValue < RandomActionThresholdValue && !RunRandomAction)
+    if (RandomValue < RandomActionThresholdValue && !RunRandomAction && bCanSeize)
     {
         RunRandomAction = true;
         RunMainAction = false;
-        ActionTime = 4.0f;
+        ActionTime = RandomActionTime;
         if (BlackboardComp && BlackboardComp->GetKeyID("RunRandomAction") != FBlackboard::InvalidKey)
         {
             Blackboard->SetValueAsBool("RunRandomAction", true);
@@ -96,6 +50,16 @@ void AMyAIController::Tick(float DeltaTime) {
         {
             Blackboard->SetValueAsBool("RunMainAction", false);
         }
+    }
+
+    //随机行为的优先级高 确保两者互斥 或同时为false 因为RunningMainAction是并行的
+    RunMainAction = false ^ RunRandomAction ? false : RunMainAction;
+
+    if (RunMainAction) {
+        RunningMainAction();
+    }
+    if (!RunMainAction && !RunRandomAction) {
+        StartMainAction();
     }
 
     //random action timer
@@ -109,14 +73,52 @@ void AMyAIController::Tick(float DeltaTime) {
             }
         }
     }
-
-    //main action is always executed,unless occupied by random action
 }
+
+//根据目标位置进行移动和旋转
+void AMyAIController::RunningMainAction() {
+    FVector TargetDir = TargetLocation - Cast<ACharacter>(GetPawn())->GetActorLocation();
+    float delta = 0.01;
+    float RotateSpeed = 2.0f;
+    GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(), TargetDir.Rotation(), delta, RotateSpeed));
+    float TurnAngle = TargetDir.Rotation().Yaw - GetPawn()->GetActorRotation().Yaw;
+    if (TurnAngle > 180) {
+        TurnAngle = TurnAngle - 360;
+    }
+    else if (TurnAngle < -180) {
+        TurnAngle += 360;
+    }
+    if (Aborn* born = Cast<Aborn>(GetPawn())) {
+        born->TurnAngle = TurnAngle;
+    }
+}
+
+//main action have no end
+//初始化主要行为的参数并开始主要行为
+void AMyAIController::StartMainAction() {
+    RunMainAction = true;
+    float Radius = 400.0f;
+    float RandomAngle = FMath::FRandRange(-PI / 2.0f, PI / 2.0f);
+    FVector CharacterLoc = GetPawn()->GetActorLocation();
+    FRotator ActorRotation = GetPawn()->GetActorRotation();
+    //FRotator ActorYaw(0, ActorRotation.Yaw, 0);
+    FVector ActorForward = FRotationMatrix(ActorRotation).GetUnitAxis(EAxis::X);
+    FVector ActorRight = FRotationMatrix(ActorRotation).GetUnitAxis(EAxis::Y);
+    TargetLocation = Radius * ActorForward * cos(RandomAngle) + Radius * ActorRight * sin(RandomAngle) + CharacterLoc;
+    if (BlackboardComp && BlackboardComp->GetKeyID("TargetLoc") != FBlackboard::InvalidKey)
+    {
+        Blackboard->SetValueAsVector("TargetLoc", TargetLocation);
+    }
+    if (BlackboardComp && BlackboardComp->GetKeyID("RunMainAction") != FBlackboard::InvalidKey)
+    {
+        Blackboard->SetValueAsBool("RunMainAction", true);
+    }
+}
+
 
 void AMyAIController::OnPossess(APawn* InPawn)
 {
     Super::OnPossess(InPawn);
-    UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
     if (BlackboardComp && BehaviorTree && BehaviorTree->BlackboardAsset)
     {
         BlackboardComp->InitializeBlackboard(*(BehaviorTree->BlackboardAsset));
@@ -137,22 +139,12 @@ void AMyAIController::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (AIPerceptionComponent)
-    {
-        AIPerceptionComponent->OnPerceptionUpdated.AddDynamic(this, &AMyAIController::OnPerceptionUpdated);
-    }
-
     float DeltaTime = 1 / 60;
     if (GetWorld()) {
         
         //无法成功设置计时器,先用tick
         //GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMyAIController::PerFrameUpdate, DeltaTime, true);
     }
-}
-
-void AMyAIController::OnPerceptionUpdated(const TArray<AActor*>& DetectedActors)
-{
-    
 }
 
 void AMyAIController::PerFrameUpdate()
@@ -184,7 +176,6 @@ void AMyAIController::PerFrameUpdate()
         }
         RunRandomAction = true;
         ActionTime = 5.0f;
-        UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
         if (BlackboardComp && BlackboardComp->GetKeyID("RunRandomAction") != FBlackboard::InvalidKey)
         {
             Blackboard->SetValueAsBool("RunRandomAction", true);
@@ -197,7 +188,6 @@ void AMyAIController::PerFrameUpdate()
         ActionTime -= DeltaTime;
         if (ActionTime < 0) {
             RunRandomAction = false;
-            UBlackboardComponent* BlackboardComp = GetBlackboardComponent();
             if (BlackboardComp && BlackboardComp->GetKeyID("RunRandomAction") != FBlackboard::InvalidKey)
             {
                 Blackboard->SetValueAsBool("RunRandomAction", false);

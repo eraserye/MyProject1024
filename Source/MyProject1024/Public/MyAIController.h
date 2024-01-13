@@ -28,21 +28,20 @@ public:
 
     virtual void Tick(float DeltaTime) override;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+    float RandomActionTime;
+
 
 protected:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-    UAIPerceptionComponent* AIPerceptionComponent;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-    UAISenseConfig_Sight* SightConfig;
-
     UBehaviorTreeComponent* BehaviorTreeComp;
 
-    virtual void BeginPlay() override;
-    virtual void OnPossess(APawn* InPawn) override;
+    virtual void RunningMainAction();
 
-    UFUNCTION(BlueprintCallable)
-    virtual void OnPerceptionUpdated(const TArray<AActor*>& DetectedActors);
+    virtual void StartMainAction();
+
+    virtual void BeginPlay() override;
+
+    virtual void OnPossess(APawn* InPawn) override;
 
     virtual void PerFrameUpdate();
 
@@ -53,9 +52,15 @@ protected:
     float ActionTime;
 
     bool RunRandomAction;
+
     bool RunMainAction;
 
     FVector TargetLocation;
+
+    UBlackboardComponent* BlackboardComp;
+
+    int MainActionPriority;
+    int RandomActionPriority;
 
 	
 };

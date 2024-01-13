@@ -16,11 +16,6 @@ Aborn::Aborn()
 	EndActionFunctions.Add(std::bind(&Aborn::EndEat, this));
 	EndActionFunctions.Add(std::bind(&Aborn::EndLookAround, this));
 
-	Mesh = GetMesh();
-	if (Mesh) {
-		AnimInstance = Mesh->GetAnimInstance();
-	}
-
 	GetCharacterMovement()->MaxWalkSpeed = 100.0f;
 }
 

@@ -4,25 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "MyAIController.h"
-#include "born.h"
-#include "../horse_spline_view.h"
 #include "AICharacter.h"
-#include "GuideController.generated.h"
+#include "../horse_spline_view.h"
+#include "MonsterAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MYPROJECT1024_API AGuideController : public AMyAIController
+class MYPROJECT1024_API AMonsterAIController : public AMyAIController
 {
 	GENERATED_BODY()
-
+	
 public:
-	AGuideController();
+	AMonsterAIController();
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	void OnPerceptionUpdated(const TArray<AActor*>& DetectedActors) ;
+	void OnPerceptionUpdated(const TArray<AActor*>& DetectedActors);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 		UAIPerceptionComponent* AIPerceptionComponent;
@@ -38,7 +37,5 @@ protected:
 
 	//之后改成有行进路径的角色或者带tag
 	Ahorse_spline_view* TargetPlayer;
-
-	FVector TargetLoc;
-	
+	FVector LastLoc;
 };
