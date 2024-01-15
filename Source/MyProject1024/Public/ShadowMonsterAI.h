@@ -20,6 +20,9 @@ class MYPROJECT1024_API AShadowMonsterAI : public AAICharacter
 public:
 	AShadowMonsterAI();
 
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+
 	void Chase();
 	void EndChase();
 
@@ -50,5 +53,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UCapsuleComponent* BodyCollisionComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material Collection")
+		UMaterialParameterCollection* CollectionReference;
 
+protected:
+	FVector VanishStartPoint;
+	FVector VanishCurPoint;
+
+	UMaterialParameterCollectionInstance* CollectionInstance;
+
+	void BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp);
+	bool IsStartHit;
+
+	float VanishTimer;
+	const float MAXVanishTimer = 5.0f;
+
+	UMaterialInstanceDynamic* MatInst;
 };
