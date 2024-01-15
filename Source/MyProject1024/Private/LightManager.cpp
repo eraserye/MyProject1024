@@ -100,18 +100,6 @@ void ALightManager::Tick(float DeltaTime)
 	int PointNum = Path->GetNumberOfSplinePoints();
 	float Time = PathKey / (PointNum-1);
 
-    if (GEngine)
-    {
-        int32 MyKey = 3;
-        float TimeToDisplay = 0.5f;
-        FColor TextColor = FColor::Red;
-        FString VectorString = FString::Printf(TEXT("time %f"), Time);
-
-        FString Message = VectorString;
-
-        GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
-    }
-
 	//interplo
     LerpAtmo(Time);
     LerpDirLight(Time);

@@ -20,6 +20,25 @@ Aman::Aman()
     GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
     GetCapsuleComponent()->SetGenerateOverlapEvents(true);
 
+    BodyCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BodyCollision"));
+    BodyCollisionComponent->SetupAttachment(GetMesh(), "BodySocket");
+    BodyCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    BodyCollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+    BodyCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+    BodyCollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECR_Overlap);
+    BodyCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnFogReceived);
+
+    //hand collision
+    HandCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HandCollision"));
+    HandCollisionComponent->SetupAttachment(GetMesh(), "HandSocket");
+    HandCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
+    HandCollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1); 
+    HandCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore); 
+    HandCollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECR_Overlap); 
+
+    HandCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnHandHit);
+
+
 
     Ridinglocation = FVector(0.0f, 0.0f, 70.0f);
     RidingRotator = FRotator(0.0f, 0.0f, -90.0f);
@@ -56,8 +75,6 @@ Aman::Aman()
     IsMoving = false;
     IsCrouching = false;
 
-
-
 }
 
 // Called when the game starts or when spawned
@@ -78,7 +95,7 @@ void Aman::BeginPlay()
 void Aman::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-    if (GEngine)
+    /*if (GEngine)
     {
         int32 MyKey = 2;
         float TimeToDisplay = 3.0f;
@@ -88,19 +105,8 @@ void Aman::Tick(float DeltaTime)
         FString Message = VectorString;
 
         GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
-    }
+    }*/
 
-    if (GEngine && Controller != nullptr)
-    {
-        int32 MyKey = 1;
-        float TimeToDisplay = 3.0f;
-        FColor TextColor = FColor::Red;
-        FString VectorString = FString::Printf(TEXT("have con "));
-
-        FString Message = VectorString;
-
-        GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
-    }
 }
 
 // Called to bind functionality to input
@@ -118,6 +124,8 @@ void Aman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &Aman::CrouchSwitch);
 
         EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &Aman::Look); 
+
+        EnhancedInputComponent->BindAction(HitAction, ETriggerEvent::Started, this, &Aman::Hit);
     }
 
 
@@ -213,6 +221,12 @@ void Aman::Look(const FInputActionValue& Value)
     }
 }
 
+
+void Aman::Hit(const FInputActionValue& Value)
+{
+    IsHitting = true;
+}
+
 void Aman::OnInteract(AActor* InteractingActor)
 {
     FVector Start = GetActorLocation();
@@ -239,4 +253,17 @@ void Aman::OnInteract(AActor* InteractingActor)
         }*/
     }
 }
+
+void Aman::OnHandHit(UPrimitiveComponent* HitComponent,
+    AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+}
+
+void Aman::OnFogReceived(UPrimitiveComponent* HitComponent,
+    AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+}
+
 

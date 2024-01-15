@@ -29,6 +29,12 @@ class MYPROJECT1024_API Aman : public ACharacter, public IDekeyInteractableInter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputMappingContext* DefaultMappingContext;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UCapsuleComponent* HandCollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UCapsuleComponent* BodyCollisionComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* MoveAction;
 
@@ -45,12 +51,22 @@ class MYPROJECT1024_API Aman : public ACharacter, public IDekeyInteractableInter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* HitAction;
+
 public:
 	// Sets default values for this character's properties
 	Aman();
 
 protected:
-	// Called when the game starts or when spawned
+	UFUNCTION(BlueprintCallable)
+		void OnHandHit(UPrimitiveComponent* HitComponent,
+			AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable)
+	void OnFogReceived(UPrimitiveComponent* HitComponent,
+		AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 	virtual void BeginPlay() override;
 
 	void Move(const FInputActionValue& Value);
@@ -62,6 +78,8 @@ protected:
 	void Interact(const FInputActionValue& Value);
 
 	void Look(const FInputActionValue& Value);
+
+	void Hit(const FInputActionValue& Value);
 
 public:	
 	// Called every frame
@@ -105,6 +123,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		bool IsMoving;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
+		bool IsHitting;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		bool IsCrouching;
