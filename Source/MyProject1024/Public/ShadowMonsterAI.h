@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AICharacter.h"
+#include "../man.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "ShadowMonsterAI.generated.h"
 
 /**
@@ -27,7 +29,12 @@ public:
 	void Pray();
 	void EndPray();
 
-	//用main action函数做借口并不好
+	UFUNCTION(BlueprintCallable)
+		void OnHitReceived(UPrimitiveComponent* HitComponent,
+			AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
+
+	//用main action函数做接口并不好
 	//virtual void MainAction() override;
 	//virtual void EndMainAction() override;
 
@@ -39,5 +46,9 @@ public:
 		bool IsPraying;
 	UPROPERTY(BlueprintReadWrite, Category = "animation category")
 		float TurnAngle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		class UCapsuleComponent* BodyCollisionComponent;
+
 
 };
