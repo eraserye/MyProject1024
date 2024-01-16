@@ -173,7 +173,9 @@ void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
 	FVector2D VanishCurPointScreen;
 	FVector2D VanishStartPointScreen;
-	bool bIsOnScreen = false;
+	CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPoint));
+	CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPoint));
+	/*bool bIsOnScreen = false;
 	if (PlayerController)
 	{
 		bIsOnScreen = UGameplayStatics::ProjectWorldToScreen(PlayerController, VanishStartPoint, VanishStartPointScreen)
@@ -196,5 +198,5 @@ void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 		}
 		CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPointScreen, 1.0f));
 		CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPointScreen, 1.0f));
-	}
+	}*/
 }
