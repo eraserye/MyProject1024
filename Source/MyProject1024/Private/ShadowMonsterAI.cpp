@@ -154,8 +154,11 @@ void AShadowMonsterAI::OnHitReceived(UPrimitiveComponent* HitComponent,
 
 				GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
 			}
+			
 			CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPointScreen,1.0f));
 			CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPointScreen,1.0f));
+			CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPointW"), VanishStartPoint);
+			CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPointW"), VanishCurPoint);
 		}
 	}
 }
@@ -196,5 +199,7 @@ void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 		}
 		CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPointScreen, 1.0f));
 		CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPointScreen, 1.0f));
+		CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPointW"), VanishStartPoint);
+		CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPointW"), VanishCurPoint);
 	}
 }

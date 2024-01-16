@@ -37,7 +37,7 @@ public:
 			AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 
-	//用main action函数做接口并不好
+	//鐢╩ain action鍑芥暟鍋氭帴鍙ｅ苟涓嶅ソ
 	//virtual void MainAction() override;
 	//virtual void EndMainAction() override;
 
