@@ -36,6 +36,8 @@ AShadowMonsterAI::AShadowMonsterAI() :AAICharacter()
 	IsStartHit = false;
 
 	VanishTimer = 0.0f;
+	MAXVanishTimer = 2.0f;
+	AnimPlayRate = 1.0f;
 }
 
 void AShadowMonsterAI::BeginPlay()
@@ -72,12 +74,15 @@ void AShadowMonsterAI::Tick(float DeltaTime)
 			break;
 		}
 	}
-	if (!HasHit) {
-		IsStartHit = false;
-	}
+	//if (!HasHit) {
+	//	IsStartHit = false;
+	//}
 
 	if (VanishTimer > 0) {
 		VanishTimer -= DeltaTime;
+		if (VanishTimer <= 0) {
+			Destroy();
+		}
 		if (MatInst) {
 			MatInst->SetScalarParameterValue(FName("VanishTime"), VanishTimer/ MAXVanishTimer);
 		}
@@ -166,15 +171,21 @@ void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 	if (!IsStartHit) {
 		VanishStartPoint = Center;
 		IsStartHit = true;
-		VanishTimer = 5.0f;
+		VanishTimer = MAXVanishTimer;
+		AnimPlayRate = 0.0f;
 	}
 	VanishCurPoint = Center;
 
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	FVector2D VanishCurPointScreen;
-	FVector2D VanishStartPointScreen;
-	CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPoint));
-	CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPoint));
+	if (MatInst) {
+		MatInst->SetVectorParameterValue(FName("CollisionStartPoint"), FVector(VanishStartPoint));
+		MatInst->SetVectorParameterValue(FName("CollisionCurPoint"), FVector(VanishCurPoint));
+	}
+
+	//APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	//FVector2D VanishCurPointScreen;
+	//FVector2D VanishStartPointScreen;
+	//CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPoint));
+	//CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPoint));
 	/*bool bIsOnScreen = false;
 	if (PlayerController)
 	{

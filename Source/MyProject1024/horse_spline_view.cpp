@@ -100,6 +100,8 @@ void Ahorse_spline_view::BeginPlay()
 		}
 	}
 
+	//AnimPlayRate = 0;
+
 }
 
 // Called every frame

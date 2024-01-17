@@ -56,6 +56,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material Collection")
 		UMaterialParameterCollection* CollectionReference;
 
+	bool IsStartHit;
+
+	UPROPERTY(BlueprintReadWrite, Category = "animation category")
+	float AnimPlayRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+	float MAXVanishTimer;
+
 protected:
 	FVector VanishStartPoint;
 	FVector VanishCurPoint;
@@ -63,10 +71,8 @@ protected:
 	UMaterialParameterCollectionInstance* CollectionInstance;
 
 	void BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp);
-	bool IsStartHit;
 
 	float VanishTimer;
-	const float MAXVanishTimer = 5.0f;
 
 	UMaterialInstanceDynamic* MatInst;
 };

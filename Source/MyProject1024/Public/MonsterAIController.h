@@ -6,6 +6,7 @@
 #include "MyAIController.h"
 #include "AICharacter.h"
 #include "../horse_spline_view.h"
+#include "../man.h"
 #include "MonsterAIController.generated.h"
 
 /**
@@ -18,6 +19,15 @@ class MYPROJECT1024_API AMonsterAIController : public AMyAIController
 	
 public:
 	AMonsterAIController();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+	float AfterHitSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+		float AttackRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+		float AttackMoveSpeed;
 
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -35,7 +45,14 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 	//之后改成有行进路径的角色或者带tag
-	Ahorse_spline_view* TargetPlayer;
+	ACharacter* TargetPlayer;
 	FVector LastLoc;
+
+	bool BeHit;
+
+	bool StartVanish;
+
 };

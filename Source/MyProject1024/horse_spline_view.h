@@ -146,6 +146,8 @@ public:
 
 	USplineComponent* CurPath;
 
+	//float AnimPlayRate;
+
 
 private:
 	bool bIsHookShotActive;

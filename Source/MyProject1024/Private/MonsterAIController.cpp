@@ -44,14 +44,14 @@ void AMonsterAIController::RunningMainAction() {
         else if (TurnAngle < -180) {
             TurnAngle += 360;
         }
-        if (BlackboardComp && BlackboardComp->GetKeyID("TargetLoc") != FBlackboard::InvalidKey)
+        /*if (BlackboardComp && BlackboardComp->GetKeyID("TargetLoc") != FBlackboard::InvalidKey)
         {
             Blackboard->SetValueAsVector("TargetLoc", TargetLoc);
-        }
+        }*/
         if (AShadowMonsterAI* Monster = Cast<AShadowMonsterAI>(GetPawn())) {
             Monster->TurnAngle = TurnAngle;
-            if ((TargetLoc - GetPawn()->GetActorLocation()).Size() < 200) {
-                Monster->GetCharacterMovement()->MaxWalkSpeed *= 1.5;
+            if ((TargetLoc - GetPawn()->GetActorLocation()).Size() < AttackRadius) {
+                Monster->GetCharacterMovement()->MaxWalkSpeed = AttackMoveSpeed;
                 Monster->Attack();
             }
         }
@@ -63,12 +63,16 @@ void AMonsterAIController::RunningMainAction() {
 void AMonsterAIController::StartMainAction() {
     if (TargetPlayer) {
         RunMainAction = true;
-        FVector TargetLoc = TargetPlayer->GetActorLocation();
+        /*FVector TargetLoc = TargetPlayer->GetActorLocation();
         FVector TargetDir = (TargetLoc - GetPawn()->GetActorLocation()).GetSafeNormal();
         TargetLoc = TargetLoc + 100 * TargetDir;
         if (BlackboardComp && BlackboardComp->GetKeyID("TargetLoc") != FBlackboard::InvalidKey)
         {
             Blackboard->SetValueAsVector("TargetLoc", TargetLoc);
+        }*/
+        if (BlackboardComp && BlackboardComp->GetKeyID("TargetActor") != FBlackboard::InvalidKey)
+        {
+            Blackboard->SetValueAsObject("TargetActor", TargetPlayer);
         }
         if (BlackboardComp && BlackboardComp->GetKeyID("HasLoc") != FBlackboard::InvalidKey)
         {
@@ -77,6 +81,9 @@ void AMonsterAIController::StartMainAction() {
         if (BlackboardComp && BlackboardComp->GetKeyID("RunMainAction") != FBlackboard::InvalidKey)
         {
             Blackboard->SetValueAsBool("RunMainAction", true);
+        }
+        if (AShadowMonsterAI* Monster = Cast<AShadowMonsterAI>(GetPawn())) {
+            Monster->Chase();
         }
     }
     else {
@@ -94,12 +101,29 @@ void AMonsterAIController::BeginPlay()
     }
 }
 
+
+void AMonsterAIController::Tick(float DeltaTime)
+{
+    if (!StartVanish) {
+        Super::Tick(DeltaTime);
+    }
+
+    if (Cast<AShadowMonsterAI>(GetPawn())->IsStartHit)
+    {
+        //中断main action并接替ai的运动控制
+        BehaviorTreeComp->StopTree(); 
+        FVector Direction = GetPawn()->GetActorForwardVector();
+        GetPawn()->AddActorWorldOffset(Direction * AfterHitSpeed * DeltaTime);
+        StartVanish = true;
+    }
+}
+
 void AMonsterAIController::OnPerceptionUpdated(const TArray<AActor*>& DetectedActors)
 {
     for (AActor* Actor : DetectedActors)
     {
         //if (Actor->IsA(Ahorse_spline_view::StaticClass()))
-        if (Ahorse_spline_view* Player = Cast<Ahorse_spline_view>(Actor))
+        if (Aman* Player = Cast<Aman>(Actor))
         {
             TargetPlayer = Player;
             break;
