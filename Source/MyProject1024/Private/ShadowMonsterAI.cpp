@@ -35,7 +35,7 @@ AShadowMonsterAI::AShadowMonsterAI() :AAICharacter()
 
 	IsStartHit = false;
 
-	VanishTimer = 1.0f;
+	VanishTimer = 0.0f;
 	MAXVanishTimer = 2.0f;
 	AnimPlayRate = 1.0f;
 }
