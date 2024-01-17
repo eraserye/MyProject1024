@@ -168,46 +168,22 @@ void AShadowMonsterAI::OnHitReceived(UPrimitiveComponent* HitComponent,
 void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 {
 	FVector Center = OtherComp->Bounds.Origin;
+	FTransform ActorTransform = GetActorTransform();
 	if (!IsStartHit) {
 		VanishStartPoint = Center;
+		FVector LocalStartLocation = ActorTransform.InverseTransformPosition(VanishStartPoint);
+		if (MatInst) {
+			MatInst->SetVectorParameterValue(FName("CollisionStartPoint"), FVector(LocalStartLocation));
+		}
 		IsStartHit = true;
 		VanishTimer = MAXVanishTimer;
 		AnimPlayRate = 0.0f;
 	}
 	VanishCurPoint = Center;
+	FVector LocalCurLocation = ActorTransform.InverseTransformPosition(VanishCurPoint);
 
 	if (MatInst) {
-		MatInst->SetVectorParameterValue(FName("CollisionStartPoint"), FVector(VanishStartPoint));
-		MatInst->SetVectorParameterValue(FName("CollisionCurPoint"), FVector(VanishCurPoint));
+		MatInst->SetVectorParameterValue(FName("CollisionCurPoint"), FVector(LocalCurLocation));
 	}
 
-	//APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	//FVector2D VanishCurPointScreen;
-	//FVector2D VanishStartPointScreen;
-	//CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPoint));
-	//CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPoint));
-	/*bool bIsOnScreen = false;
-	if (PlayerController)
-	{
-		bIsOnScreen = UGameplayStatics::ProjectWorldToScreen(PlayerController, VanishStartPoint, VanishStartPointScreen)
-			&& UGameplayStatics::ProjectWorldToScreen(PlayerController, VanishCurPoint, VanishCurPointScreen);
-	}
-
-	if (CollectionInstance && bIsOnScreen)
-	{
-		if (GEngine)
-		{
-			int32 MyKey = 7;
-			float TimeToDisplay = 3.0f;
-			FColor TextColor = FColor::Red;
-			FString VectorString = FString::Printf(TEXT("screen pos : start %f %f cur %f %f"),
-				VanishStartPointScreen.X, VanishStartPointScreen.Y, VanishCurPointScreen.X, VanishCurPointScreen.Y);
-
-			FString Message = VectorString;
-
-			GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
-		}
-		CollectionInstance->SetVectorParameterValue(TEXT("CollisionStartPoint"), FVector(VanishStartPointScreen, 1.0f));
-		CollectionInstance->SetVectorParameterValue(TEXT("CollisionCurPoint"), FVector(VanishCurPointScreen, 1.0f));
-	}*/
 }
