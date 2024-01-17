@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "DekeyInteractableInterface.h"
+#include "hookPoint.h"
 #include "man.generated.h"
 
 UCLASS()
@@ -54,6 +55,9 @@ class MYPROJECT1024_API Aman : public ACharacter, public IDekeyInteractableInter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* HitAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* HookShotAction;
+
 public:
 	// Sets default values for this character's properties
 	Aman();
@@ -80,6 +84,10 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void Hit(const FInputActionValue& Value);
+
+	void HookShot(const FInputActionValue& Value);
+
+	void ApplyInitialFallVelocity();
 
 public:	
 	// Called every frame
@@ -133,5 +141,18 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		bool IsClimbing;
 
+	//hook 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+		float HookSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+		float FallSpeed;
+
+private:
+	bool bIsHookShotActive;
+	FVector HookShotTarget;
+	//hook point for last frame
+	AActor* BestHookPoint_tem;
+	bool showUI;
 
 };

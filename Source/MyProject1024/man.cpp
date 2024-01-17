@@ -75,6 +75,11 @@ Aman::Aman()
     IsMoving = false;
     IsCrouching = false;
 
+    //hook
+    bIsHookShotActive = false;
+    BestHookPoint_tem = nullptr;
+    HookSpeed = 1000.0f;
+
 }
 
 // Called when the game starts or when spawned
@@ -107,6 +112,98 @@ void Aman::Tick(float DeltaTime)
         GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
     }*/
 
+    //钩锁点检测
+    TArray<AActor*> FoundActors;
+    FVector CharacterLocation = GetActorLocation();
+    float DetectionRadius = 1000.0f;
+
+    //获取所有钩锁类
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AhookPoint::StaticClass(), FoundActors);
+
+    FVector ForwardVector = GetActorForwardVector();
+    TArray<AActor*> VisibleActors;
+    float AngleThreshold = 45.0f; // 你可以调整这个值
+
+    //获取符合条件
+    for (AActor* Actor : FoundActors)
+    {
+        FVector DirectionToHookPoint = Actor->GetActorLocation() - CharacterLocation;
+        DirectionToHookPoint.Normalize();
+        float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(ForwardVector, DirectionToHookPoint)));
+
+        FVector HookPointLocation = Actor->GetActorLocation();
+        FHitResult HitResult;
+        if (Angle <= AngleThreshold
+            && !GetWorld()->LineTraceSingleByChannel(HitResult, CharacterLocation, HookPointLocation, ECC_Visibility))
+        {
+            VisibleActors.Add(Actor);
+        }
+    }
+
+    AActor* BestHookPoint = nullptr;
+    float BestDistance = FLT_MAX;
+    float BestAngle = FLT_MAX;
+
+    //获得最佳点
+    for (AActor* Actor : VisibleActors)
+    {
+        FVector DirectionToHookPoint = Actor->GetActorLocation() - CharacterLocation;
+        float Distance = DirectionToHookPoint.Size();
+        DirectionToHookPoint.Normalize();
+        float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(ForwardVector, DirectionToHookPoint)));
+
+        if (Angle < BestAngle || (Angle == BestAngle && Distance < BestDistance))
+        {
+            BestHookPoint = Actor;
+            BestDistance = Distance;
+            BestAngle = Angle;
+        }
+    }
+
+    if (BestHookPoint_tem) {
+        //去除上一帧
+        if (Cast<AhookPoint>(BestHookPoint_tem)->WidgetInstance)
+        {
+            Cast<AhookPoint>(BestHookPoint_tem)->RemoveMyWidgetFromViewport();
+        }
+    }
+
+    if (BestHookPoint != nullptr)
+    {
+        Cast<AhookPoint>(BestHookPoint)->ShowHookUI(GetController<APlayerController>());
+        showUI = true;
+    }
+
+    BestHookPoint_tem = BestHookPoint;
+
+    //hook shot
+    if (bIsHookShotActive)
+    {
+        FVector CurrentLocation = GetActorLocation();
+        FVector Direction = (HookShotTarget - CurrentLocation).GetSafeNormal();
+        FVector NewLocation = CurrentLocation + Direction * HookSpeed * DeltaTime;
+
+        if (FVector::Dist(NewLocation, HookShotTarget) < 100.0f) // 这个值也可以调整
+        {
+            bIsHookShotActive = false;
+            GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            GetCharacterMovement()->GravityScale = 1;
+            ApplyInitialFallVelocity();
+        }
+        else
+        {
+            SetActorLocation(NewLocation);
+        }
+    }
+}
+
+void Aman::ApplyInitialFallVelocity()
+{
+    FVector CurrentLocation = GetActorLocation();
+    FVector Direction = (HookShotTarget - CurrentLocation).GetSafeNormal();
+    FVector FallVelocity = Direction * FallSpeed;
+    GetCharacterMovement()->Velocity = FallVelocity;
+
 }
 
 // Called to bind functionality to input
@@ -126,6 +223,8 @@ void Aman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &Aman::Look); 
 
         EnhancedInputComponent->BindAction(HitAction, ETriggerEvent::Started, this, &Aman::Hit);
+
+        EnhancedInputComponent->BindAction(HookShotAction, ETriggerEvent::Triggered, this, &Aman::HookShot);
     }
 
 
@@ -221,6 +320,17 @@ void Aman::Look(const FInputActionValue& Value)
     }
 }
 
+
+void Aman::HookShot(const FInputActionValue& Value)
+{
+    if (BestHookPoint_tem)
+    {
+        GetCharacterMovement()->GravityScale = 0;
+        bIsHookShotActive = true;
+        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+        HookShotTarget = Cast<AhookPoint>(BestHookPoint_tem)->GetTargetPosition();
+    }
+}
 
 void Aman::Hit(const FInputActionValue& Value)
 {
