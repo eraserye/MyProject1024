@@ -24,7 +24,7 @@ ADirectorProxy::ADirectorProxy()
 	Path->SetupAttachment(RootComponent);
 	Path->SetClosedLoop(false);
 
-	CameraPoint = CreateDefaultSubobject<USceneComponent>(TEXT("CameraPoint"));
+	CameraPoint = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraPoint"));
 	CameraPoint->SetupAttachment(RootComponent);
 
 	CameraPoint->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));

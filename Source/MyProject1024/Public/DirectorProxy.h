@@ -68,7 +68,7 @@ public:
 
 	//static
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "camera")
-	USceneComponent* CameraPoint;
+	class UCameraComponent* CameraPoint;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "camera")
 	bool UseStaticCamera;

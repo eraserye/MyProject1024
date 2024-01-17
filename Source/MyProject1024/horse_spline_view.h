@@ -155,6 +155,7 @@ private:
 	AActor* BestHookPoint_tem;
 	bool showUI;
 	//ADirectorProxy* CurDirector;
+	float RaceTimer;
 
 
 };

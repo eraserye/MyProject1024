@@ -35,7 +35,6 @@ void AMonsterAIController::RunningMainAction() {
         FVector TargetDir = (TargetLoc - GetPawn()->GetActorLocation()).GetSafeNormal();
         TargetLoc = TargetLoc + 100 * TargetDir;
         float delta = 0.01;
-        float RotateSpeed = 2.0f;
         GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(), TargetDir.Rotation(), delta, RotateSpeed));
         float TurnAngle = TargetDir.Rotation().Yaw - GetPawn()->GetActorRotation().Yaw;
         if (TurnAngle > 180) {

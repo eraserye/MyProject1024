@@ -79,7 +79,6 @@ void AMyAIController::Tick(float DeltaTime) {
 void AMyAIController::RunningMainAction() {
     FVector TargetDir = TargetLocation - Cast<ACharacter>(GetPawn())->GetActorLocation();
     float delta = 0.01;
-    float RotateSpeed = 2.0f;
     GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(), TargetDir.Rotation(), delta, RotateSpeed));
     float TurnAngle = TargetDir.Rotation().Yaw - GetPawn()->GetActorRotation().Yaw;
     if (TurnAngle > 180) {
@@ -104,7 +103,7 @@ void AMyAIController::StartMainAction() {
     //FRotator ActorYaw(0, ActorRotation.Yaw, 0);
     FVector ActorForward = FRotationMatrix(ActorRotation).GetUnitAxis(EAxis::X);
     FVector ActorRight = FRotationMatrix(ActorRotation).GetUnitAxis(EAxis::Y);
-    TargetLocation = Radius * ActorForward * cos(RandomAngle) + Radius * ActorRight * sin(RandomAngle) + CharacterLoc;
+    TargetLocation = Radius * ActorForward * sin(RandomAngle) + Radius * ActorRight * cos(RandomAngle) + CharacterLoc;
     if (BlackboardComp && BlackboardComp->GetKeyID("TargetLoc") != FBlackboard::InvalidKey)
     {
         Blackboard->SetValueAsVector("TargetLoc", TargetLocation);

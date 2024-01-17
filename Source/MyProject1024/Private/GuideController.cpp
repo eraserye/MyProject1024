@@ -29,7 +29,6 @@ AGuideController::AGuideController() :AMyAIController()
 void AGuideController::RunningMainAction() {
     FVector TargetDir = TargetLoc - Cast<ACharacter>(GetPawn())->GetActorLocation();
     float delta = 0.01;
-    float RotateSpeed = 2.0f;
     GetPawn()->SetActorRotation(FMath::RInterpTo(GetPawn()->GetActorRotation(), TargetDir.Rotation(), delta, RotateSpeed));
     float TurnAngle = TargetDir.Rotation().Yaw - GetPawn()->GetActorRotation().Yaw;
     if (TurnAngle > 180) {
@@ -38,9 +37,9 @@ void AGuideController::RunningMainAction() {
     else if (TurnAngle < -180) {
         TurnAngle += 360;
     }
-    //if (Aborn* born = Cast<Aborn>(GetPawn())) {
-    //    born->TurnAngle = TurnAngle;
-    //}
+    if (Aborn* born = Cast<Aborn>(GetPawn())) {
+        born->TurnAngle = TurnAngle;
+    }
 }
 
 //注意guide的目的 完整行为
@@ -95,5 +94,5 @@ void AGuideController::OnPerceptionUpdated(const TArray<AActor*>& DetectedActors
         }
     }
     //离开视线时清除对象 否则一直保留
-    TargetPlayer = nullptr;
+    //TargetPlayer = nullptr;
 }

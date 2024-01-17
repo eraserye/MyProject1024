@@ -18,13 +18,6 @@ ALightManager::ALightManager()
     DaySky->SetupAttachment(RootComponent);
     CurrentSky->SetupAttachment(RootComponent);
 
-    DaySky->SetVisibility(false, true);
-    NightSky->SetVisibility(false, true);
-    CurrentSky->SetVisibility(true, true);
-    DaySky->SetHiddenInGame(true, true);
-    NightSky->SetHiddenInGame(true, true);
-    CurrentSky->SetHiddenInGame(false, true);
-
     DayDirLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("DayDirLight"));
     NightDirLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("NightDirLight"));
     CurrentDirLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("CurrentDirLight"));
@@ -33,12 +26,6 @@ ALightManager::ALightManager()
     NightDirLight->SetupAttachment(RootComponent);
     CurrentDirLight->SetupAttachment(RootComponent);
 
-    DayDirLight->SetVisibility(false, true);
-    NightDirLight->SetVisibility(false, true);
-    CurrentDirLight->SetVisibility(true, true);
-    DayDirLight->SetHiddenInGame(true, true);
-    NightDirLight->SetHiddenInGame(true, true);
-    CurrentDirLight->SetHiddenInGame(false, true);
 
     DaySkyLight = CreateDefaultSubobject<USkyLightComponent>(TEXT("DaySkyLight"));
     NightSkyLight = CreateDefaultSubobject<USkyLightComponent>(TEXT("NightSkyLight"));
@@ -48,12 +35,7 @@ ALightManager::ALightManager()
     DaySkyLight->SetupAttachment(RootComponent);
     CurrentSkyLight->SetupAttachment(RootComponent);
 
-    DaySkyLight->SetVisibility(false, true);
-    NightSkyLight->SetVisibility(false, true);
-    CurrentSkyLight->SetVisibility(true, true);
-    DaySkyLight->SetHiddenInGame(true, true);
-    NightSkyLight->SetHiddenInGame(true, true);
-    CurrentSkyLight->SetHiddenInGame(false, true);
+
 
     DayFog = CreateDefaultSubobject<UExponentialHeightFogComponent>(TEXT("DayFog"));
     NightFog = CreateDefaultSubobject<UExponentialHeightFogComponent>(TEXT("NightFog"));
@@ -63,20 +45,13 @@ ALightManager::ALightManager()
     DayFog->SetupAttachment(RootComponent);
     CurrentFog->SetupAttachment(RootComponent);
 
-    DayFog->SetVisibility(false, true);
-    NightFog->SetVisibility(false, true);
-    CurrentFog->SetVisibility(true, true);
-    DayFog->SetHiddenInGame(true, true);
-    NightFog->SetHiddenInGame(true, true);
-    CurrentFog->SetHiddenInGame(false, true);
 
-    DayFog->bEnableVolumetricFog = true;
-    NightFog->bEnableVolumetricFog = true;
+    //DayFog->bEnableVolumetricFog = true;
+    //NightFog->bEnableVolumetricFog = true;
 
 	Path = CreateDefaultSubobject<USplineComponent>(TEXT("Path"));
 	Path->SetupAttachment(RootComponent);
 	Path->SetClosedLoop(false);
-
 
 }
 
@@ -84,6 +59,36 @@ ALightManager::ALightManager()
 void ALightManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+    DaySky->SetVisibility(false, true);
+    NightSky->SetVisibility(false, true);
+    CurrentSky->SetVisibility(true, true);
+    DaySky->SetHiddenInGame(true, true);
+    NightSky->SetHiddenInGame(true, true);
+    CurrentSky->SetHiddenInGame(false, true);
+
+
+    DayDirLight->SetVisibility(false, true);
+    NightDirLight->SetVisibility(false, true);
+    CurrentDirLight->SetVisibility(true, true);
+    DayDirLight->SetHiddenInGame(true, true);
+    NightDirLight->SetHiddenInGame(true, true);
+    CurrentDirLight->SetHiddenInGame(false, true);
+
+    DaySkyLight->SetVisibility(false, true);
+    NightSkyLight->SetVisibility(false, true);
+    CurrentSkyLight->SetVisibility(true, true);
+    DaySkyLight->SetHiddenInGame(true, true);
+    NightSkyLight->SetHiddenInGame(true, true);
+    CurrentSkyLight->SetHiddenInGame(false, true);
+
+    DayFog->SetVisibility(false, true);
+    NightFog->SetVisibility(false, true);
+    CurrentFog->SetVisibility(true, true);
+    DayFog->SetHiddenInGame(true, true);
+    NightFog->SetHiddenInGame(true, true);
+    CurrentFog->SetHiddenInGame(false, true);
 	
 }
 
@@ -99,6 +104,8 @@ void ALightManager::Tick(float DeltaTime)
 	float PathKey = Path->FindInputKeyClosestToWorldLocation(PawnLocation);
 	int PointNum = Path->GetNumberOfSplinePoints();
 	float Time = PathKey / (PointNum-1);
+    Time = FMath::Clamp(Time, 0, 1);
+
 
 	//interplo
     LerpAtmo(Time);
@@ -108,7 +115,7 @@ void ALightManager::Tick(float DeltaTime)
 }
 
 void ALightManager::LerpAtmo(float Time) {
-    Time = FMath::Clamp(Time, 0, 1);
+    Time = Time < 0.75 ? 0.0 : (Time - 0.75) / 0.25;
     if (DaySky && NightSky)
     {
         float DayMultiScattering = DaySky->MultiScatteringFactor;
@@ -123,20 +130,26 @@ void ALightManager::LerpAtmo(float Time) {
         float DayMieScale = DaySky->MieScatteringScale;
         float NightMieScale = NightSky->MieScatteringScale;
 
+        FLinearColor DayMieScattering = DaySky->MieScattering;
+        FLinearColor NightMieScattering = NightSky->MieScattering;
+
         float InterpMultiScattering = FMath::Lerp(DayMultiScattering, NightMultiScattering, Time);
         float InterpRayleighScale = FMath::Lerp(DayRayleighScale, NightRayleighScale, Time);
         FLinearColor InterpRayleighScattering = FLinearColor::LerpUsingHSV(DayRayleighScattering, NightRayleighScattering, Time);
         float InterpMieScale = FMath::Lerp(DayMieScale, NightMieScale, Time);
+        FLinearColor InterpMieScattering = FLinearColor::LerpUsingHSV(DayMieScattering, NightMieScattering, Time);
 
         CurrentSky->SetMultiScatteringFactor(InterpMultiScattering);
         CurrentSky->SetRayleighScatteringScale(InterpRayleighScale);
         CurrentSky->SetRayleighScattering(InterpRayleighScattering);
         CurrentSky->SetMieScatteringScale(InterpMieScale);
+        CurrentSky->SetMieScattering(InterpMieScattering);
     }
 }
 
 void ALightManager::LerpDirLight(float Time) {
-    Time = FMath::Clamp(Time, 0, 1);
+    float RotateTime = Time < 0.75 ? Time / 0.75 : (1 - Time) / 0.25;
+    Time = Time < 0.75 ? 0.0 : (Time - 0.75) / 0.25;
     if (DayDirLight && NightDirLight)
     {
         float DayIntensity = DayDirLight->Intensity;
@@ -151,20 +164,34 @@ void ALightManager::LerpDirLight(float Time) {
         float DayTemperature = DayDirLight->Temperature;
         float NightTemperature = NightDirLight->Temperature;
 
+        FRotator  DayRotation = DayDirLight->GetComponentTransform().Rotator();
+        FRotator  NightRotation = NightDirLight->GetComponentTransform().Rotator();
+
+        FQuat DayQuat = FQuat(DayRotation);
+        FQuat NightQuat = FQuat(NightRotation);
+
+
+
         float InterpIntensity = FMath::Lerp(DayIntensity, NightIntensity, Time);
         FLinearColor InterpLightColor = FLinearColor::LerpUsingHSV(DayLightColor, NightLightColor, Time);
         FLinearColor InterpCloudScatteredLuminanceScale = FLinearColor::LerpUsingHSV(DayCloudScatteredLuminanceScale, NightCloudScatteredLuminanceScale, Time);
         float InterpTemperature = FMath::Lerp(DayTemperature, NightTemperature, Time);
+        //inter rotate
+        FQuat InterpolatedQuat = FQuat::Slerp(DayQuat, NightQuat, RotateTime);
+        FRotator InterpolatedRotation = InterpolatedQuat.Rotator();
+        
 
         CurrentDirLight->SetIntensity(InterpIntensity);
         CurrentDirLight->SetLightColor(InterpLightColor);
         CurrentDirLight->CloudScatteredLuminanceScale = InterpCloudScatteredLuminanceScale;
         CurrentDirLight->SetTemperature(InterpTemperature);
+        //CurrentDirLight->GetComponentTransform().Rotator() = InterpolatedRotation;
+        CurrentDirLight->SetWorldRotation(InterpolatedRotation);
     }
 }
 
 void ALightManager::LerpSkyLight(float Time) {
-    Time = FMath::Clamp(Time, 0, 1);
+    Time = Time < 0.75 ? 0.0 : (Time - 0.75) / 0.25;
     if (DaySkyLight && NightSkyLight)
     {
         float DayIntensity = DaySkyLight->Intensity;
@@ -182,7 +209,7 @@ void ALightManager::LerpSkyLight(float Time) {
 }
 
 void ALightManager::LerpFog(float Time) {
-    Time = FMath::Clamp(Time, 0, 1);
+    Time = Time < 0.75 ? 0.0 : (Time - 0.75) / 0.25;
     if (DaySkyLight && NightSkyLight)
     {
         float DayDensity = DayFog->FogDensity;

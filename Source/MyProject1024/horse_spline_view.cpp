@@ -84,6 +84,8 @@ Ahorse_spline_view::Ahorse_spline_view()
 	HookSpeed = 1000.0f;
 	FallSpeed = 1000.0f;
 
+	RaceTimer = 0.0f;
+
 }
 
 // Called when the game starts or when spawned
@@ -156,86 +158,7 @@ void Ahorse_spline_view::Tick(float DeltaTime)
 		}
 	}
 
-	//获得最近的粒子系统
-	//UNiagaraComponent* MyParticleSystem = nullptr;
-	//TArray<AActor*> ParticleActors;
-	//UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("fish"), ParticleActors);
-	////UGameplayStatics::GetAllActorsOfClass(GetWorld(), UParticleSystemComponent::StaticClass(), ParticleActors);
-	//for (AActor* Actor : ParticleActors){
-	//	
-	//	UNiagaraComponent* ParticleSystemComp = Actor->FindComponentByClass<UNiagaraComponent>();
-	//	if (ParticleSystemComp) {
-	//		if (GEngine)
-	//		{
-	//			int32 MyKey = 3; // 一个唯一的键值用于标识消息，如果多次调用该方法并使用相同的键，新的消息将覆盖旧的消息
-	//			float TimeToDisplay = 5.0f; // 消息显示的时间（秒）
-	//			FColor TextColor = FColor::Red; // 消息的颜色
-	//			FString VectorString = FString::Printf(TEXT("fish is particle"));
-
-	//			FString Message = VectorString;
-
-	//			GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
-	//		}
-	//		MyParticleSystem = ParticleSystemComp;
-	//		break;
-	//	}
-	//}
-
-	//FVector BestHookLocation;
-	//bool ShotParticle = false;
-	//if (MyParticleSystem)
-	//{
-	//	if (GEngine)
- //       {
- //           int32 MyKey = 3; // 一个唯一的键值用于标识消息，如果多次调用该方法并使用相同的键，新的消息将覆盖旧的消息
- //           float TimeToDisplay = 5.0f; // 消息显示的时间（秒）
- //           FColor TextColor = FColor::Red; // 消息的颜色
- //           FString VectorString = FString::Printf(TEXT("enable particle"));
-
- //           FString Message = VectorString;
-
- //           GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
- //       }
-
-	//	// 获取粒子系统的模块
-	//	FParticleEmitterInstance* EmitterInstance = MyParticleSystem->EmitterInstances[0];
-	//	if (EmitterInstance)
-	//	{
-	//		// 获取粒子数据
-	//		for (int32 ParticleIndex = 0; ParticleIndex < EmitterInstance->ActiveParticles; ++ParticleIndex)
-	//		{
-	//			// 获取粒子数据
-	//			FBaseParticle* Particle = EmitterInstance->GetParticle(ParticleIndex);
-	//			if (Particle)
-	//			{
-	//				// 获取粒子位置
-	//				FVector ParticleLocation = Particle->Location;
-
-	//				// 选择最优粒子
-	//				FVector DirectionToHookPoint = ParticleLocation - CharacterLocation;
-	//				float Distance = DirectionToHookPoint.Size();
-	//				DirectionToHookPoint.Normalize();
-	//				float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(ForwardVector, DirectionToHookPoint)));
-
-	//				if (Angle < BestAngle || (Angle == BestAngle && Distance < BestDistance))
-	//				{
-	//					//BestHookPoint = Particle;
-	//					ShotParticle = true;
-	//					BestHookLocation = ParticleLocation;
-	//					BestDistance = Distance;
-	//					BestAngle = Angle;
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//bool EnableParticle = true;
-	//AhookPoint* BestParticle;
-	//if (EnableParticle && ShotParticle) {
-	//	FRotator Rotation = FRotator::ZeroRotator;
-	//	BestParticle = GetWorld()->SpawnActor<AhookPoint>(AhookPoint::StaticClass(), BestHookLocation, Rotation);
-	//	BestHookPoint = BestParticle;
-	//}
+	
 
 	if (BestHookPoint_tem) {
 		//去除上一帧
@@ -272,6 +195,15 @@ void Ahorse_spline_view::Tick(float DeltaTime)
 		}
 	}
 
+	if (RaceTimer > 0) {
+		RaceTimer -= DeltaTime;
+		if (RaceTimer < 0) {
+			SpeedLevel -= 1;
+			if (SpeedLevel > 1) {
+				RaceTimer = 2.0f;
+			}
+		}
+	}
 }
 
 void Ahorse_spline_view::ApplyInitialFallVelocity()
@@ -331,7 +263,9 @@ void Ahorse_spline_view::SetupPlayerInputComponent(class UInputComponent* Player
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::Move);
 
-		EnhancedInputComponent->BindAction(RaceAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::Race);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &Ahorse_spline_view::EndMove);
+
+		EnhancedInputComponent->BindAction(RaceAction, ETriggerEvent::Started, this, &Ahorse_spline_view::Race);
 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::Interact);
 		EnhancedInputComponent->BindAction(HookShotAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::HookShot);
@@ -372,7 +306,23 @@ void Ahorse_spline_view::Move(const FInputActionValue& Value)
 		const FVector MoveDirection = ActorForward;
 
 		const FVector RotateForward = ForwardDirection * MovementVector.Y + RightDirection * MovementVector.X;
-		AddMovementInput(ActorForward, MoveSpeed);
+		if (SpeedLevel == 0) {
+			SpeedLevel = 1;
+		}
+		float ResSpeed = SpeedLevel * 2 - 1 + (SpeedLevel > 3 ? SpeedLevel * 2 : 0);
+		AddMovementInput(ActorForward, MoveSpeed * ResSpeed);
+
+		if (GEngine)
+		{
+			int32 MyKey = 5;
+			float TimeToDisplay = 3.0f;
+			FColor TextColor = FColor::Red;
+			FString VectorString = FString::Printf(TEXT("speed level:%d res:%d"), SpeedLevel, ResSpeed);
+
+			FString Message = VectorString;
+
+			GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
+		}
 
 		SetActorRotation(FMath::RInterpTo(GetActorRotation(), RotateForward.Rotation(), delta, RotateSpeed));
 		TurnAngle = RotateForward.Rotation().Yaw - GetActorRotation().Yaw;
@@ -384,16 +334,13 @@ void Ahorse_spline_view::Move(const FInputActionValue& Value)
 		}
 
 		IsMoving = true;
-
-		if (SpeedLevel == 0) {
-			SpeedLevel = 1;
-		}
 	}
 }
 
 void Ahorse_spline_view::EndMove(const FInputActionValue& Value) {
 	IsMoving = false;
 	TurnAngle = 0;
+	SpeedLevel = 0;
 }
 
 void Ahorse_spline_view::Race(const FInputActionValue& Value)
@@ -402,6 +349,10 @@ void Ahorse_spline_view::Race(const FInputActionValue& Value)
 	if (SpeedLevel != 0) {
 		SpeedLevel += 1;
 	}
+	if (SpeedLevel > 5) {
+		SpeedLevel = 5;
+	}
+	RaceTimer = 2.0f;
 }
 
 void Ahorse_spline_view::HookShot(const FInputActionValue& Value)

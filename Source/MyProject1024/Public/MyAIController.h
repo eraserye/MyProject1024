@@ -31,6 +31,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
     float RandomActionTime;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+    float RotateSpeed;
+
 
 protected:
     UBehaviorTreeComponent* BehaviorTreeComp;
