@@ -86,6 +86,9 @@ Ahorse_spline_view::Ahorse_spline_view()
 
 	RaceTimer = 0.0f;
 
+
+	SequenceTimer = 0.0f;
+	InteractTimer = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -204,6 +207,26 @@ void Ahorse_spline_view::Tick(float DeltaTime)
 			}
 		}
 	}
+
+	if (SequenceTimer > 0) {
+		SequenceTimer -= DeltaTime;
+		if (SequenceTimer < 0) {
+			IDekeyInteractableInterface* InteractingObj = DekeyInteract("EatingDekey", InteractMode);
+			if (director && InteractingObj) {
+				director->SequenceMode = true;
+				InteractTimer = InteractingObj->InteractTimer;
+			}
+		}
+	}
+
+	if (InteractTimer > 0) {
+		InteractTimer -= DeltaTime;
+		if (InteractTimer < 0) {
+			if (director) {
+				director->SequenceMode = false;
+			}
+		}
+	}
 }
 
 void Ahorse_spline_view::ApplyInitialFallVelocity()
@@ -222,7 +245,7 @@ void Ahorse_spline_view::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,
 {
 	if (OtherActor && OtherActor != this && OtherActor->IsA(ADirectorProxy::StaticClass()))
 	{
-		ADirectorProxy* director = Cast<ADirectorProxy>(OtherActor);
+		director = Cast<ADirectorProxy>(OtherActor);
 		CurPath = director->Path;
 		AMyPlayerController* PC = GetController<AMyPlayerController>();
 		AMyPlayerCameraManager* CameraManager = nullptr;
@@ -231,7 +254,7 @@ void Ahorse_spline_view::OnOverlapBegin(UPrimitiveComponent* OverlappedComp,
 		}
 		if (CameraManager) {
 			CameraManager->DirectorProxy = director;
-			CameraManager->SwitchMode = true;
+			//CameraManager->SwitchMode = true;
 			//CameraManager->SequenceMode = true;
 		}
 
@@ -268,6 +291,10 @@ void Ahorse_spline_view::SetupPlayerInputComponent(class UInputComponent* Player
 		EnhancedInputComponent->BindAction(RaceAction, ETriggerEvent::Started, this, &Ahorse_spline_view::Race);
 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::Interact);
+
+		EnhancedInputComponent->BindAction(EatAction, ETriggerEvent::Started, this, &Ahorse_spline_view::Eat);
+		EnhancedInputComponent->BindAction(EatAction, ETriggerEvent::Completed, this, &Ahorse_spline_view::EndEat);
+
 		EnhancedInputComponent->BindAction(HookShotAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::HookShot);
 
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::Look);
@@ -371,23 +398,36 @@ void Ahorse_spline_view::Interact(const FInputActionValue& Value)
 	DekeyInteract("Dekey", InteractMode);
 }
 
-void Ahorse_spline_view::DekeyInteract(const FString& Tag,const FString& Condition)
+void Ahorse_spline_view::Eat(const FInputActionValue& Value)
+{
+	IsEating = true;
+	SequenceTimer = 2.0f;
+}
+
+void Ahorse_spline_view::EndEat(const FInputActionValue& Value)
+{
+	IsEating = false;
+	SequenceTimer = 0.0f;
+}
+
+IDekeyInteractableInterface* Ahorse_spline_view::DekeyInteract(const FString& Tag,const FString& Condition)
 {
 	if (Condition == "RayDetermine")
 	{
-		PerformRaycastDetection(Tag);
+		return PerformRaycastDetection(Tag);
 	}
 	else if (Condition == "RadiusDetermine")
 	{
-		PerformRadiusDetection(Tag);
+		return PerformRadiusDetection(Tag);
 	}
 	else if (Condition == "OverlapDetermine")
 	{
-		PerformOverlapDetection(Tag);
+		return PerformOverlapDetection(Tag);
 	}
+	return nullptr;
 }
 
-void Ahorse_spline_view::PerformRaycastDetection(const FString& Tag)
+IDekeyInteractableInterface* Ahorse_spline_view::PerformRaycastDetection(const FString& Tag)
 {
 	FVector Start = GetActorLocation();
 	FVector ForwardVector = GetActorForwardVector(); 
@@ -408,17 +448,14 @@ void Ahorse_spline_view::PerformRaycastDetection(const FString& Tag)
 			if (Interactable)
 			{
 				Interactable->OnInteract(this);
+				return Interactable;
 			}
 		}
 	}
-
-	if (bDebug)
-	{
-		//DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-	}
+	return nullptr;
 }
 
-void Ahorse_spline_view::PerformRadiusDetection(const FString& Tag)
+IDekeyInteractableInterface* Ahorse_spline_view::PerformRadiusDetection(const FString& Tag)
 {
 	// 获取角色周围的所有物体
 	TArray<FOverlapResult> OverlapResults;
@@ -437,16 +474,18 @@ void Ahorse_spline_view::PerformRadiusDetection(const FString& Tag)
 				if (Interactable)
 				{
 					Interactable->OnInteract(this);
+					return Interactable;
 				}
 			}
 		}
 	}
+	return nullptr;
 }
 
-void Ahorse_spline_view::PerformOverlapDetection(const FString& Tag)
+IDekeyInteractableInterface* Ahorse_spline_view::PerformOverlapDetection(const FString& Tag)
 {
 	UPrimitiveComponent* CollisionComponent = GetCapsuleComponent();
-	if (!CollisionComponent) return;
+	if (!CollisionComponent) return nullptr;
 
 	TArray<AActor*> OverlappedActors;
 
@@ -460,9 +499,11 @@ void Ahorse_spline_view::PerformOverlapDetection(const FString& Tag)
 			if (Interactable)
 			{
 				Interactable->OnInteract(this);
+				return Interactable;
 			}
 		}
 	}
+	return nullptr;
 }
 
 void Ahorse_spline_view::Look(const FInputActionValue& Value)

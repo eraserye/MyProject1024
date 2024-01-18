@@ -23,4 +23,5 @@ class MYPROJECT1024_API IDekeyInteractableInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	virtual void OnInteract(AActor* InteractingActor) = 0;
+	float InteractTimer;
 };

@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "DekeyInteractableInterface.h"
+#include "Public/DirectorProxy.h"
 #include "hookPoint.h"
 #include "man.generated.h"
 
@@ -165,6 +166,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		bool IsLighting;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
+		bool IsRidding;
+
+	//interact
+	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
+		bool IsSpeaking;
+
 	//hook 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
 		float HookSpeed;
@@ -172,11 +180,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
 		float FallSpeed;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
+		float MaxSpeakTime;
+
 private:
 	bool bIsHookShotActive;
 	FVector HookShotTarget;
 	//hook point for last frame
 	AActor* BestHookPoint_tem;
 	bool showUI;
+	float SpeakTimer;
+	AActor* CurInteractingActor;
 
 };

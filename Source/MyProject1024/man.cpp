@@ -102,6 +102,11 @@ Aman::Aman()
     BestHookPoint_tem = nullptr;
     HookSpeed = 1000.0f;
 
+    SpeakTimer = 0;
+    MaxSpeakTime = 10.0f;
+
+    InteractTimer = 10.0f;
+
 }
 
 // Called when the game starts or when spawned
@@ -220,6 +225,24 @@ void Aman::Tick(float DeltaTime)
             SetActorLocation(NewLocation);
         }
     }
+
+    if (SpeakTimer > 0) {
+        SpeakTimer -= DeltaTime;
+        if (SpeakTimer < 0) {
+            IsSpeaking = false;
+            if (CurInteractingActor)
+            {
+                AttachToActor(CurInteractingActor, FAttachmentTransformRules::KeepWorldTransform);
+
+                SetActorRelativeLocation(Ridinglocation);
+                SetActorRelativeRotation(RidingRotator);
+                GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                GetCharacterMovement()->GravityScale = 0;
+                IsRidding = true;
+            }
+        }
+    }
+    
 }
 
 void Aman::ApplyInitialFallVelocity()
@@ -348,7 +371,6 @@ void Aman::Look(const FInputActionValue& Value)
     }
 }
 
-
 void Aman::HookShot(const FInputActionValue& Value)
 {
     if (BestHookPoint_tem)
@@ -377,29 +399,9 @@ void Aman::EndLight(const FInputActionValue& Value)
 
 void Aman::OnInteract(AActor* InteractingActor)
 {
-    FVector Start = GetActorLocation();
-    FVector ForwardVector = GetActorForwardVector();
-    FVector End = ((ForwardVector * 1000.f) + Start);
-    DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-    if (InteractingActor)
-    {
-        DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 1, 0, 1);
-        AttachToActor(InteractingActor, FAttachmentTransformRules::KeepWorldTransform);
-
-        SetActorRelativeLocation(Ridinglocation);
-        //CustomMesh->SetWorldRotation(RidingRotator);
-        SetActorRelativeRotation(RidingRotator);
-        GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-        GetCharacterMovement()->GravityScale = 0;
-
-        /*if (RidingAnimation)
-        {
-            if (CustomMesh && RidingAnimation)
-            {
-                CustomMesh->PlayAnimation(RidingAnimation, true);
-            }
-        }*/
-    }
+    SpeakTimer = InteractTimer;
+    IsSpeaking = true;
+    CurInteractingActor = InteractingActor;
 }
 
 void Aman::OnHandHit(UPrimitiveComponent* HitComponent,

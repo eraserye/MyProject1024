@@ -86,4 +86,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "camera")
 	USceneComponent* SequencyTarget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "camera")
+		bool SequenceMode;
+
 };

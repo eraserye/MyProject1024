@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "DekeyInteractableInterface.h"
 #include "Components/SplineComponent.h"
+#include "Public/DirectorProxy.h"
 #include "horse_spline_view.generated.h"
 
 
@@ -44,6 +45,10 @@ class MYPROJECT1024_API Ahorse_spline_view : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* EatAction;
+	
 public:
 	// Sets default values for this character's properties
 	Ahorse_spline_view();
@@ -65,18 +70,21 @@ protected:
 
 	void Look(const FInputActionValue& Value);
 
+	void Eat(const FInputActionValue& Value);
+	void EndEat(const FInputActionValue& Value);
+
 	void ApplyInitialFallVelocity();
 
 
 	void Interact(const FInputActionValue& Value);
 
-	void DekeyInteract(const FString& Tag, const FString& Condition);
+	IDekeyInteractableInterface* DekeyInteract(const FString& Tag, const FString& Condition);
 
-	void PerformRaycastDetection(const FString& Tag);
+	IDekeyInteractableInterface* PerformRaycastDetection(const FString& Tag);
 
-	void PerformRadiusDetection(const FString& Tag);
+	IDekeyInteractableInterface* PerformRadiusDetection(const FString& Tag);
 
-	void PerformOverlapDetection(const FString& Tag);
+	IDekeyInteractableInterface* PerformOverlapDetection(const FString& Tag);
 
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, 
@@ -133,6 +141,9 @@ public:
 		bool IsMoving;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
+		bool IsEating;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		int SpeedLevel;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
@@ -146,6 +157,10 @@ public:
 
 	USplineComponent* CurPath;
 
+	ADirectorProxy* director;
+
+	float SequenceTimer;
+
 	//float AnimPlayRate;
 
 
@@ -156,6 +171,7 @@ private:
 	bool showUI;
 	//ADirectorProxy* CurDirector;
 	float RaceTimer;
+	float InteractTimer;
 
 
 };

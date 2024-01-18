@@ -39,8 +39,8 @@ void AMyPlayerCameraManager::UpdateViewTarget(FTViewTarget& OutVT, float DeltaTi
 		GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
 	}*/
 
-	if (SequenceMode && DirectorProxy->SequencePath) {
-		DirectorProxy->SequenceTime += DeltaTime;
+	if (DirectorProxy && DirectorProxy->SequenceMode && DirectorProxy->SequencePath) {
+		DirectorProxy->SequenceTime += DeltaTime/DirectorProxy->SequencePath->GetNumberOfSplinePoints();
 		if (DirectorProxy->SequenceTime > 1) {
 			DirectorProxy->SequenceTime = 0;
 		}
@@ -52,7 +52,7 @@ void AMyPlayerCameraManager::UpdateViewTarget(FTViewTarget& OutVT, float DeltaTi
 		OutVT.POV.Rotation = Rotator;
 		Mode = SequencePath;
 	}
-	else if (SequenceMode && DirectorProxy->SequencePoint) {
+	else if (DirectorProxy && DirectorProxy->SequenceMode && DirectorProxy->SequencePoint) {
 		FVector CameraPos = DirectorProxy->SequencePoint->GetComponentLocation();
 		FVector ViewDirection = DirectorProxy->SequencyTarget->GetComponentLocation() - CameraPos;
 		FRotator Rotator = ViewDirection.Rotation();
@@ -97,6 +97,9 @@ void AMyPlayerCameraManager::UpdateViewTarget(FTViewTarget& OutVT, float DeltaTi
 			UpdateViewTargetInternal(OutVT, DeltaTime);
 		}
 		Mode = Follow;
+	}
+	if (OrigMode != Mode) {
+		SwitchMode = true;
 	}
 	if (SwitchMode) {
 		SwitchMode = false;
