@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Fish.h"
 #include "GameFramework/Actor.h"
+#include "Blueprint/UserWidget.h"
 #include "FishSwarm.generated.h"
 
 UCLASS()
@@ -61,13 +62,13 @@ public:
 	UPROPERTY(EditAnywhere,Category="FishSwarm")
 	float TotLifeTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+		TSubclassOf<UUserWidget> HookWidgetClass;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
-
-	
 	TArray<AFish*> Pool;
 
 	TArray<AFish*> AvailiblePool;

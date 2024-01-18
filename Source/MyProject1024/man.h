@@ -36,6 +36,15 @@ class MYPROJECT1024_API Aman : public ACharacter, public IDekeyInteractableInter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		class UCapsuleComponent* BodyCollisionComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"),Category = "Weapon")
+		USkeletalMeshComponent* LanternMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"),Category = "Weapon")
+		UCapsuleComponent* LanternCollision;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"),Category = "Weapon")
+		UCapsuleComponent* LightCollision;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* MoveAction;
 
@@ -58,6 +67,9 @@ class MYPROJECT1024_API Aman : public ACharacter, public IDekeyInteractableInter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* HookShotAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* LightAction;
+
 public:
 	// Sets default values for this character's properties
 	Aman();
@@ -65,6 +77,11 @@ public:
 protected:
 	UFUNCTION(BlueprintCallable)
 		void OnHandHit(UPrimitiveComponent* HitComponent,
+			AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+
+	UFUNCTION(BlueprintCallable)
+		void OnLightHit(UPrimitiveComponent* HitComponent,
 			AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION(BlueprintCallable)
@@ -86,6 +103,10 @@ protected:
 	void Hit(const FInputActionValue& Value);
 
 	void HookShot(const FInputActionValue& Value);
+	
+	void Light(const FInputActionValue& Value);
+
+	void EndLight(const FInputActionValue& Value);
 
 	void ApplyInitialFallVelocity();
 
@@ -140,6 +161,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		bool IsClimbing;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
+		bool IsLighting;
 
 	//hook 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")

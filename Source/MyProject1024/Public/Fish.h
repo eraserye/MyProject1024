@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
+#include "../hookPoint.h"
 #include "Fish.generated.h"
+
 
 UCLASS()
 class MYPROJECT1024_API AFish : public AActor
@@ -19,6 +21,12 @@ public:
 	bool bIsDead;
 
 	float LifeTime;
+
+	UPROPERTY(EditAnywhere)
+	AhookPoint* hookPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+		TSubclassOf<UUserWidget> HookWidgetClass;
 
 	// AFish(FVector StartSpeed, UStaticMeshComponent* FishMesh);
 

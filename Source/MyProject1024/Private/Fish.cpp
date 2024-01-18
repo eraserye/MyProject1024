@@ -20,9 +20,9 @@ AFish::AFish()
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionComponent"));
 	CollisionComponent->SetupAttachment(FishMesh);
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFish::OnBeginOverlap);
+
+	
 }
-
-
 
 
 // Called when the game starts or when spawned
@@ -30,25 +30,32 @@ void AFish::BeginPlay()
 {
 	Super::BeginPlay();
 	LifeTime=0;
+
+	if (GetWorld())
+	{
+		hookPoint = GetWorld()->SpawnActor<AhookPoint>(AhookPoint::StaticClass(),GetActorLocation(), GetActorRotation());
+		hookPoint->HookWidgetClass = HookWidgetClass;
+		hookPoint->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+	}
+
 }
 
 void AFish::Restart(FVector StartVelocity,FVector StartLocation)
 {
 	this->Velocity=StartVelocity;
 	this->Location=StartLocation;
-	// if (GEngine)
-	// {
-	// 	int32 MyKey = 7;
-	// 	float TimeToDisplay = 3.0f;
-	// 	FColor TextColor = FColor::Red;
-	// 	FString VectorString = FString::Printf(TEXT("start Location %f %f %f"),Location.X,Location.Y,Location.Z);
-	//
-	// 	FString Message = VectorString;
-	//
-	// 	GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, TextColor, Message);
-	// }
 	SetActorRelativeLocation(Location);
 	this->LifeTime=0.0f;
+	/*if (!hookPoint) {
+		if (GetWorld())
+		{
+			hookPoint = GetWorld()->SpawnActor<AhookPoint>(AhookPoint::StaticClass(), GetActorLocation(), GetActorRotation());
+			hookPoint->HookWidgetClass = HookWidgetClass;
+			hookPoint->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+		}
+	}
+	else {
+	}*/
 }
 
 void AFish::MoveFish(float DeltaTime)
@@ -81,8 +88,11 @@ void AFish::MoveFish(float DeltaTime)
 void AFish::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	hookPoint->HookWidgetClass = HookWidgetClass;
 	MoveFish(DeltaTime);
 	LifeTime+=DeltaTime;
+
+	//AddActorWorldOffset(FVector(1, 0, 0) * 100 * DeltaTime);
 	
 }
 
@@ -96,6 +106,6 @@ void AFish::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 void AFish::AddForce(FVector Force,float DeltaTime)
 {
 	Velocity+=Force*DeltaTime;
-	
+
 }
 

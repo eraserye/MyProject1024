@@ -29,6 +29,7 @@ Aman::Aman()
     BodyCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnFogReceived);
 
     //hand collision
+    //打击有父类角色类判别,暂时绑在角色上好一点
     HandCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("HandCollision"));
     HandCollisionComponent->SetupAttachment(GetMesh(), "HandSocket");
     HandCollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); 
@@ -38,6 +39,27 @@ Aman::Aman()
 
     HandCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnHandHit);
 
+    //weapon
+    LanternMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Lantern"));
+    LanternMesh->SetupAttachment(GetMesh(), "HandSocket");
+
+    /*LanternCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("LanternMesh"));
+    LanternCollision->SetupAttachment(LanternMesh);
+
+    LanternCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    LanternCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
+    LanternCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+    LanternCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECR_Overlap);
+    LanternCollision->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnHandHit);*/
+
+    LightCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("LightCollision"));
+    LightCollision->SetupAttachment(LanternMesh);
+
+    LightCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    LightCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
+    LightCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+    LightCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECR_Overlap);
+    LightCollision->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnLightHit);
 
 
     Ridinglocation = FVector(0.0f, 0.0f, 70.0f);
@@ -122,7 +144,7 @@ void Aman::Tick(float DeltaTime)
 
     FVector ForwardVector = GetActorForwardVector();
     TArray<AActor*> VisibleActors;
-    float AngleThreshold = 45.0f; // 你可以调整这个值
+    float AngleThreshold = 45.0f; 
 
     //获取符合条件
     for (AActor* Actor : FoundActors)
@@ -132,6 +154,9 @@ void Aman::Tick(float DeltaTime)
         float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(ForwardVector, DirectionToHookPoint)));
 
         FVector HookPointLocation = Actor->GetActorLocation();
+        //for tolerance
+        FVector ViewDirection = (HookPointLocation - CharacterLocation).GetSafeNormal();
+        HookPointLocation -= ViewDirection * 50;
         FHitResult HitResult;
         if (Angle <= AngleThreshold
             && !GetWorld()->LineTraceSingleByChannel(HitResult, CharacterLocation, HookPointLocation, ECC_Visibility))
@@ -225,8 +250,11 @@ void Aman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         EnhancedInputComponent->BindAction(HitAction, ETriggerEvent::Started, this, &Aman::Hit);
 
         EnhancedInputComponent->BindAction(HookShotAction, ETriggerEvent::Triggered, this, &Aman::HookShot);
-    }
 
+        EnhancedInputComponent->BindAction(LightAction, ETriggerEvent::Triggered, this, &Aman::Light);
+
+        EnhancedInputComponent->BindAction(LightAction, ETriggerEvent::Completed, this, &Aman::EndLight);
+    }
 
 }
 
@@ -337,6 +365,16 @@ void Aman::Hit(const FInputActionValue& Value)
     IsHitting = true;
 }
 
+void Aman::Light(const FInputActionValue& Value)
+{
+    IsLighting = true;
+}
+
+void Aman::EndLight(const FInputActionValue& Value)
+{
+    IsLighting = false;
+}
+
 void Aman::OnInteract(AActor* InteractingActor)
 {
     FVector Start = GetActorLocation();
@@ -365,6 +403,12 @@ void Aman::OnInteract(AActor* InteractingActor)
 }
 
 void Aman::OnHandHit(UPrimitiveComponent* HitComponent,
+    AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+}
+
+void Aman::OnLightHit(UPrimitiveComponent* HitComponent,
     AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 

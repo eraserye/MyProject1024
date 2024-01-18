@@ -4,6 +4,7 @@
 #include "hookPoint.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Camera/CameraComponent.h"
 #include "hookUI.h"
 #include "Components/Image.h"
 
@@ -15,6 +16,10 @@ AhookPoint::AhookPoint()
     IsAdd = false;
     WidgetInstance = nullptr;
     targetOffset = FVector(0.0f, 0.0f, 90.0f);
+
+    FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+    FollowCamera->SetupAttachment(RootComponent);
+    FollowCamera->bUsePawnControlRotation = false; 
 
 }
 

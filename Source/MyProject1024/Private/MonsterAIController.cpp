@@ -100,7 +100,6 @@ void AMonsterAIController::BeginPlay()
     }
 }
 
-
 void AMonsterAIController::Tick(float DeltaTime)
 {
     if (!StartVanish) {
@@ -110,10 +109,26 @@ void AMonsterAIController::Tick(float DeltaTime)
     if (Cast<AShadowMonsterAI>(GetPawn())->IsStartHit)
     {
         //中断main action并接替ai的运动控制
-        BehaviorTreeComp->StopTree(); 
+        //BehaviorTreeComp->StopTree(); 
+        if (BlackboardComp && BlackboardComp->GetKeyID("bCanMove") != FBlackboard::InvalidKey)
+        {
+            Blackboard->SetValueAsBool("bCanMove", false);
+        }
         FVector Direction = GetPawn()->GetActorForwardVector();
         GetPawn()->AddActorWorldOffset(Direction * AfterHitSpeed * DeltaTime);
         StartVanish = true;
+    }
+    else if (Cast<AShadowMonsterAI>(GetPawn())->IsFear) {
+        if (BlackboardComp && BlackboardComp->GetKeyID("bCanMove") != FBlackboard::InvalidKey)
+        {
+            Blackboard->SetValueAsBool("bCanMove", false);
+        }
+    }
+    else {
+        if (BlackboardComp && BlackboardComp->GetKeyID("bCanMove") != FBlackboard::InvalidKey)
+        {
+            Blackboard->SetValueAsBool("bCanMove", true);
+        }
     }
 }
 

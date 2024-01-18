@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/StaticMeshComponent.h"
 #include "hookPoint.generated.h"
 
 UCLASS()
@@ -15,6 +16,10 @@ class MYPROJECT1024_API AhookPoint : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AhookPoint();
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		class UCameraComponent* FollowCamera;
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,6 +39,9 @@ public:
 
 	UPROPERTY()
 		UUserWidget* WidgetInstance;
+
+	/*UPROPERTY(VisibleAnywhere)
+		UStaticMeshComponent* CubeComponent;*/
 
 private:
 	bool IsAdd;

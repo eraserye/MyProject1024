@@ -20,9 +20,6 @@ AFishSwarm::AFishSwarm()
 	BeginSwarmCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AFishSwarm::OnPlayerEnterTriggerBox);
 	BeginSwarmCollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AFishSwarm::OnPlayerLeaveTriggerBox);
 
-
-	
-	
 }
 
 void AFishSwarm::ReturnFish(AFish* Fish)
@@ -41,6 +38,7 @@ AFish* AFishSwarm::GetFish()
 		Fish->SetActorHiddenInGame(false);
 		Fish->SetActorEnableCollision(true);
 		Fish->bIsDead=false;
+		Fish->HookWidgetClass = HookWidgetClass;
 		InitializeFish(Fish);
 		return Fish;
 	}
@@ -52,18 +50,8 @@ void AFishSwarm::InitializePool()
 	UWorld* WorldContext=GetWorld();
 	for(int i=0;i<FishSpawnRate;i++)
 	{
-		// if (GEngine)
-		// {
-		// 	int32 MyKey = 7;
-		// 	float TimeToDisplay = 3.0f;
-		// 	FColor TextColor = FColor::Red;
-		// 	FString VectorString = FString::Printf(TEXT("initial %d"),i);
-		//
-		// 	FString Message = VectorString;
-		//
-		// 	GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, TextColor, Message);
-		// }
 		AFish* NewFish = WorldContext->SpawnActor<AFish>(FishClass);
+		NewFish->HookWidgetClass = HookWidgetClass;
 		// 将鱼附加到Swarm Actor
 		NewFish->AttachToComponent(this->RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 		NewFish->SetActorEnableCollision(false);
@@ -99,17 +87,6 @@ void AFishSwarm::UpdateEachFish(float DeltaTime)
 	AFish* Temp;
 	if (bIsSpawn)
 	{
-		if (GEngine)
-		{
-			int32 MyKey = 7;
-			float TimeToDisplay = 3.0f;
-			FColor TextColor = FColor::Red;
-			FString VectorString = FString::Printf(TEXT("get fish"));
-			
-			FString Message = VectorString;
-			
-			GEngine->AddOnScreenDebugMessage(-1, TimeToDisplay, TextColor, Message);
-		}
 		if(FMath::FRandRange(0.0,1.0f)<SpawnSpeed)	GetFish();
 	}
 	// GetFish();

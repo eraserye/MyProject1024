@@ -309,7 +309,7 @@ void Ahorse_spline_view::Move(const FInputActionValue& Value)
 		if (SpeedLevel == 0) {
 			SpeedLevel = 1;
 		}
-		float ResSpeed = SpeedLevel * 2 - 1 + (SpeedLevel > 3 ? SpeedLevel * 2 : 0);
+		float ResSpeed = SpeedLevel * 2 - 1 + (SpeedLevel > 3 ? SpeedLevel * 4 : 0);
 		AddMovementInput(ActorForward, MoveSpeed * ResSpeed);
 
 		if (GEngine)
@@ -317,7 +317,7 @@ void Ahorse_spline_view::Move(const FInputActionValue& Value)
 			int32 MyKey = 5;
 			float TimeToDisplay = 3.0f;
 			FColor TextColor = FColor::Red;
-			FString VectorString = FString::Printf(TEXT("speed level:%d res:%d"), SpeedLevel, ResSpeed);
+			FString VectorString = FString::Printf(TEXT("speed level:%f res:%f"), SpeedLevel, ResSpeed);
 
 			FString Message = VectorString;
 

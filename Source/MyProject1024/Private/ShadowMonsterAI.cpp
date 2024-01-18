@@ -23,7 +23,8 @@ AShadowMonsterAI::AShadowMonsterAI() :AAICharacter()
 	BodyCollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	BodyCollisionComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	BodyCollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECR_Overlap);
-	//BodyCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AShadowMonsterAI::OnHitReceived);
+	//only for light
+	//BodyCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AShadowMonsterAI::OnLightHitReceived);
 
 
 	//make sure the function order is right
@@ -73,10 +74,16 @@ void AShadowMonsterAI::Tick(float DeltaTime)
 			HasHit = true;
 			break;
 		}
+		else if (Component->GetName().Equals(TEXT("LightCollision"))) {
+			BeLightHit();
+			HasHit = true;
+			break;
+		}
 	}
-	//if (!HasHit) {
-	//	IsStartHit = false;
-	//}
+	if (!HasHit) {
+		//IsStartHit = false;
+		EndLightHit();
+	}
 
 	if (VanishTimer > 0) {
 		VanishTimer -= DeltaTime;
@@ -165,10 +172,18 @@ void AShadowMonsterAI::OnHitReceived(UPrimitiveComponent* HitComponent,
 	}
 }
 
+
+void AShadowMonsterAI::OnLightHitReceived(UPrimitiveComponent* HitComponent,
+	AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	IsFear = true;
+
+}
+
 void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 {
 	FVector Center = OtherComp->Bounds.Origin;
-	FTransform ActorTransform = GetActorTransform();
+	FTransform ActorTransform = GetMesh()->GetComponentTransform();
 	if (!IsStartHit) {
 		VanishStartPoint = Center;
 		FVector LocalStartLocation = ActorTransform.InverseTransformPosition(VanishStartPoint);
@@ -186,4 +201,25 @@ void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 		MatInst->SetVectorParameterValue(FName("CollisionCurPoint"), FVector(LocalCurLocation));
 	}
 
+	if (GEngine)
+	{
+		int32 MyKey = 6;
+		float TimeToDisplay = 3.0f;
+		FColor TextColor = FColor::Red;
+		FString VectorString = FString::Printf(TEXT("be hit"));
+
+		FString Message = VectorString;
+
+		GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
+	}
+}
+
+void AShadowMonsterAI::BeLightHit()
+{
+	IsFear = true;
+}
+
+void AShadowMonsterAI::EndLightHit()
+{
+	IsFear = false;
 }
