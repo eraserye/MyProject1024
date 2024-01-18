@@ -92,6 +92,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	void Move(const FInputActionValue& Value);
+	void EndMove(const FInputActionValue& Value);
 
 	void CrouchSwitch(const FInputActionValue& Value);
 
@@ -102,6 +103,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void Hit(const FInputActionValue& Value);
+	void EndHit(const FInputActionValue& Value);
 
 	void HookShot(const FInputActionValue& Value);
 	

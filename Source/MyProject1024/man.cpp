@@ -262,6 +262,7 @@ void Aman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
     if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
         
         EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &Aman::Move);
+        EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &Aman::EndMove);
 
         EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Triggered, this, &Aman::Climb);
 
@@ -271,6 +272,7 @@ void Aman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
         EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &Aman::Look); 
 
         EnhancedInputComponent->BindAction(HitAction, ETriggerEvent::Started, this, &Aman::Hit);
+        EnhancedInputComponent->BindAction(HitAction, ETriggerEvent::Completed, this, &Aman::EndHit);
 
         EnhancedInputComponent->BindAction(HookShotAction, ETriggerEvent::Triggered, this, &Aman::HookShot);
 
@@ -331,6 +333,12 @@ void Aman::Move(const FInputActionValue& Value)
     }
 }
 
+
+void Aman::EndMove(const FInputActionValue& Value) {
+    IsMoving = false;
+    TurnAngle = 0;
+}
+
 void Aman::Interact(const FInputActionValue& Value) {
 
 }
@@ -385,6 +393,11 @@ void Aman::HookShot(const FInputActionValue& Value)
 void Aman::Hit(const FInputActionValue& Value)
 {
     IsHitting = true;
+}
+
+void Aman::EndHit(const FInputActionValue& Value)
+{
+    IsHitting = false;
 }
 
 void Aman::Light(const FInputActionValue& Value)
