@@ -29,6 +29,7 @@ Ahorse_spline_view::Ahorse_spline_view()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &Ahorse_spline_view::OnOverlapBegin);
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -60,7 +61,6 @@ Ahorse_spline_view::Ahorse_spline_view()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &Ahorse_spline_view::OnOverlapBegin);
 
 	//注意有没有注释掉参数初始化...
 	delta = 0.01;

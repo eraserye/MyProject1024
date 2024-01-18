@@ -73,6 +73,11 @@ void AMyAIController::Tick(float DeltaTime) {
             }
         }
     }
+
+    //lock yaw
+    FRotator CurrentRotation = GetPawn()->GetActorRotation();
+    CurrentRotation.Pitch = 0.f; // 锁定俯仰角为0
+    GetPawn()->SetActorRotation(CurrentRotation);
 }
 
 //根据目标位置进行移动和旋转
