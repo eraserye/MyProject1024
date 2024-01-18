@@ -11,6 +11,7 @@
 #include "Public/MyPlayerController.h"
 #include "Public/MyPlayerCameraManager.h"
 #include "Camera/CameraComponent.h"
+#include "horse_spline_view.h"
 
 // Sets default values
 Aman::Aman()
@@ -106,6 +107,8 @@ Aman::Aman()
     MaxSpeakTime = 10.0f;
 
     InteractTimer = 10.0f;
+
+    IsLeaning = true;
 
 }
 
@@ -230,19 +233,44 @@ void Aman::Tick(float DeltaTime)
         SpeakTimer -= DeltaTime;
         if (SpeakTimer < 0) {
             IsSpeaking = false;
-            if (CurInteractingActor)
+            if (Ahorse_spline_view* horse=Cast<Ahorse_spline_view>(CurInteractingActor))
             {
-                AttachToActor(CurInteractingActor, FAttachmentTransformRules::KeepWorldTransform);
-
-                SetActorRelativeLocation(Ridinglocation);
-                SetActorRelativeRotation(RidingRotator);
-                GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-                GetCharacterMovement()->GravityScale = 0;
-                IsRidding = true;
+                if (!horse->Rider) {
+                    Riding(CurInteractingActor);
+                    horse->Rider = this;
+                }
             }
         }
     }
     
+}
+
+void Aman::Riding(AActor* InteractingActor) {
+    AttachToActor(InteractingActor, FAttachmentTransformRules::KeepWorldTransform);
+
+    SetActorRelativeLocation(Ridinglocation);
+    //SetActorRelativeRotation(RidingRotator);
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetCharacterMovement()->GravityScale = 0;
+    IsRidding = true;
+}
+
+void Aman::EndRiding() {
+    DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+    FVector CurrentLocation = GetActorLocation();
+
+    FVector RightVector = GetActorRightVector();
+    FVector NewLocation = CurrentLocation + RightVector * 100.0f; 
+    SetActorLocation(NewLocation);
+
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+    GetCharacterMovement()->GravityScale = 1;
+    IsRidding = false;
+    if (Ahorse_spline_view* horse = Cast<Ahorse_spline_view>(CurInteractingActor))
+    {
+        horse->Rider = nullptr;
+    }
 }
 
 void Aman::ApplyInitialFallVelocity()
@@ -415,6 +443,7 @@ void Aman::OnInteract(AActor* InteractingActor)
     SpeakTimer = InteractTimer;
     IsSpeaking = true;
     CurInteractingActor = InteractingActor;
+    IsLeaning = false;
 }
 
 void Aman::OnHandHit(UPrimitiveComponent* HitComponent,

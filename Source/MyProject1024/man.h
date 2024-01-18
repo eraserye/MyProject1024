@@ -175,6 +175,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
 		bool IsSpeaking;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Your Category")
+		bool IsLeaning;
+
 	//hook 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
 		float HookSpeed;
@@ -185,6 +188,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "YourCategory")
 		float MaxSpeakTime;
 
+	void Riding(AActor* CurInteractingActor);
+
+	void EndRiding();
+
+
 private:
 	bool bIsHookShotActive;
 	FVector HookShotTarget;
@@ -193,5 +201,6 @@ private:
 	bool showUI;
 	float SpeakTimer;
 	AActor* CurInteractingActor;
+
 
 };

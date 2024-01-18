@@ -17,6 +17,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Public/DirectorProxy.h"
 #include "Public/MyPlayerController.h"
+#include "man.h"
 #include "Public/MyPlayerCameraManager.h"
 
 
@@ -89,6 +90,8 @@ Ahorse_spline_view::Ahorse_spline_view()
 
 	SequenceTimer = 0.0f;
 	InteractTimer = 0.0f;
+
+	Rider = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -216,8 +219,22 @@ void Ahorse_spline_view::Tick(float DeltaTime)
 				director->SequenceMode = true;
 				InteractTimer = InteractingObj->InteractTimer;
 			}
+			else if (Rider) {
+				if (Aman* man = Cast<Aman>(Rider)) {
+					APlayerController* PlayerController = GetController<APlayerController>();
+
+					if (PlayerController)
+					{
+						PlayerController->UnPossess();
+						PlayerController->Possess(Cast<ACharacter>(Rider));
+					}
+
+					man->EndRiding();
+				}
+			}
 		}
 	}
+
 
 	if (InteractTimer > 0) {
 		InteractTimer -= DeltaTime;

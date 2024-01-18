@@ -24,4 +24,5 @@ class MYPROJECT1024_API IDekeyInteractableInterface
 public:
 	virtual void OnInteract(AActor* InteractingActor) = 0;
 	float InteractTimer;
+	bool BeRider;
 };

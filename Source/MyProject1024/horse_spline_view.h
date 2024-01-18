@@ -162,6 +162,8 @@ public:
 	float SequenceTimer;
 
 	//float AnimPlayRate;
+	bool BeRiding;
+	AActor* Rider;
 
 
 private:
