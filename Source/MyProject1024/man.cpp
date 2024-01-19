@@ -54,7 +54,8 @@ Aman::Aman()
     LanternCollision->OnComponentBeginOverlap.AddDynamic(this, &Aman::OnHandHit);*/
 
     LightCollision = CreateDefaultSubobject<UCapsuleComponent>(TEXT("LightCollision"));
-    LightCollision->SetupAttachment(LanternMesh);
+    //LightCollision->SetupAttachment(LanternMesh);
+    LightCollision->SetupAttachment(GetMesh(), "HandSocket");
 
     LightCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     LightCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
@@ -88,6 +89,13 @@ Aman::Aman()
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false; 
 
+
+    TargetPoint = CreateDefaultSubobject<USceneComponent>(TEXT("TargetPoint"));
+    TargetPoint->SetupAttachment(RootComponent);
+    TargetPoint->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+    TargetPoint->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
+    
+
     //注意有没有注释掉参数初始化...
     delta = 0.01;
     RotateSpeed = 10;
@@ -110,6 +118,10 @@ Aman::Aman()
 
     IsLeaning = true;
 
+    DialogueLines.Add(FText::FromString("这是第一行对话"));
+    DialogueLines.Add(FText::FromString("这是第二行对话"));
+    DialogueLines.Add(FText::FromString("这是第三行对话"));
+
 }
 
 // Called when the game starts or when spawned
@@ -123,6 +135,16 @@ void Aman::BeginPlay()
         {
             Subsystem->AddMappingContext(DefaultMappingContext, 0);
         }
+    }
+
+    TargetLoc = TargetPoint->GetComponentLocation();
+
+    if (UDialogueWidget* Widget = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass))
+    {
+        Widget->AddToViewport();
+        MyDialogueUI = Widget;
+
+        MyDialogueUI->UpdateText(FText::FromString("Hello, this is a dialogue text!"));
     }
 }
 
@@ -444,6 +466,33 @@ void Aman::OnInteract(AActor* InteractingActor)
     IsSpeaking = true;
     CurInteractingActor = InteractingActor;
     IsLeaning = false;
+
+    MyDialogueUI->UpdateText(FText::FromString("Interact!"));
+    CurrentLineIndex = 0;
+    if (CurrentLineIndex < DialogueLines.Num())
+    {
+        if (MyDialogueUI)
+        {
+            MyDialogueUI->UpdateText(DialogueLines[CurrentLineIndex]);
+        }
+
+        CurrentLineIndex++;
+        GetWorld()->GetTimerManager().SetTimer(DialogueTimerHandle, this, &Aman::DisplayNextDialogueLine, 2.0f, false);
+    }
+}
+
+void Aman::DisplayNextDialogueLine()
+{
+    if (CurrentLineIndex < DialogueLines.Num())
+    {
+        if (MyDialogueUI)
+        {
+            MyDialogueUI->UpdateText(DialogueLines[CurrentLineIndex]);
+        }
+
+        CurrentLineIndex++;
+        GetWorld()->GetTimerManager().SetTimer(DialogueTimerHandle, this, &Aman::DisplayNextDialogueLine, 2.0f, false);
+    }
 }
 
 void Aman::OnHandHit(UPrimitiveComponent* HitComponent,

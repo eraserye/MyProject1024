@@ -18,6 +18,8 @@
 #include "Public/DirectorProxy.h"
 #include "Public/MyPlayerController.h"
 #include "man.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Materials/MaterialParameterCollectionInstance.h"
 #include "Public/MyPlayerCameraManager.h"
 
 
@@ -58,6 +60,11 @@ Ahorse_spline_view::Ahorse_spline_view()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	ParticleSystemComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MyParticleSystem"));
+	ParticleSystemComponent->SetupAttachment(RootComponent);
+
+	ParticleSystemComponent->SetAutoActivate(false);
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -109,6 +116,9 @@ void Ahorse_spline_view::BeginPlay()
 	}
 
 	//AnimPlayRate = 0;
+	if (CollectionReference) {
+		CollectionInstance = GetWorld()->GetParameterCollectionInstance(CollectionReference);
+	}
 
 }
 
@@ -315,6 +325,8 @@ void Ahorse_spline_view::SetupPlayerInputComponent(class UInputComponent* Player
 		EnhancedInputComponent->BindAction(HookShotAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::HookShot);
 
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &Ahorse_spline_view::Look);
+
+		EnhancedInputComponent->BindAction(WindAction, ETriggerEvent::Started, this, &Ahorse_spline_view::Wind);
 	}
 
 }
@@ -535,4 +547,26 @@ void Ahorse_spline_view::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void Ahorse_spline_view::Wind(const FInputActionValue& Value)
+{
+	FVector WindDir;
+	if (Aman* man=Cast<Aman>(Rider)) {
+		FVector TargetLoc = man->TargetLoc;
+		WindDir = (TargetLoc - GetActorLocation()).GetSafeNormal();
+	}
+	else {
+		WindDir = FVector(1, 0, 0);
+	}
+	//´«²ÎÊý
+	if (CollectionInstance) {
+		CollectionInstance->SetVectorParameterValue(FName("WindDirection"), WindDir);
+	}
+
+	ParticleSystemComponent->ActivateSystem();
+
+	ParticleSystemComponent->SetNiagaraVariableVec3("WindDirection", WindDir);
+	ParticleSystemComponent->SetNiagaraVariableFloat("WindSpeed", 1.0f);
+}
+
 

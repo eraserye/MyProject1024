@@ -69,15 +69,28 @@ void AShadowMonsterAI::Tick(float DeltaTime)
 	bool HasHit = false;
 	for (UPrimitiveComponent* Component : OverlappingComponents)
 	{
-		if (Aman* man = Cast<Aman>(Component->GetOwner())) {
-			BeHit(man, Component);
-			HasHit = true;
-			break;
+		if (GEngine)
+		{
+			int32 MyKey = 4;
+			float TimeToDisplay = 3.0f;
+			FColor TextColor = FColor::Red;
+			FString VectorString = FString::Printf(TEXT("has hit component"));
+
+			FString Message = VectorString;
+
+			GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
 		}
-		else if (Component->GetName().Equals(TEXT("LightCollision"))) {
-			BeLightHit();
-			HasHit = true;
-			break;
+		if (Aman* man = Cast<Aman>(Component->GetOwner())) {
+			if (Component->GetName().Equals(TEXT("HandCollision"))){
+				BeHit(man, Component);
+				HasHit = true;
+				break;
+			}
+			else if (Component->GetName().Equals(TEXT("LightCollision"))) {
+				BeLightHit();
+				HasHit = true;
+				break;
+			}
 		}
 	}
 	if (!HasHit) {
@@ -212,11 +225,28 @@ void AShadowMonsterAI::BeHit(AActor* OtherActor, UPrimitiveComponent* OtherComp)
 
 		GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
 	}
+	
 }
 
 void AShadowMonsterAI::BeLightHit()
 {
+	EndAttack();
+	EndChase();
+	EndPray();
 	IsFear = true;
+
+	if (GEngine)
+	{
+		int32 MyKey = 5;
+		float TimeToDisplay = 3.0f;
+		FColor TextColor = FColor::Red;
+		FString VectorString = FString::Printf(TEXT("be light hit"));
+
+		FString Message = VectorString;
+
+		GEngine->AddOnScreenDebugMessage(MyKey, TimeToDisplay, TextColor, Message);
+	}
+	
 }
 
 void AShadowMonsterAI::EndLightHit()

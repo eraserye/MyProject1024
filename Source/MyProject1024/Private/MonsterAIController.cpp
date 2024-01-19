@@ -102,14 +102,14 @@ void AMonsterAIController::BeginPlay()
 
 void AMonsterAIController::Tick(float DeltaTime)
 {
-    if (!StartVanish) {
+    if (!StartVanish && !Cast<AShadowMonsterAI>(GetPawn())->IsFear) {
         Super::Tick(DeltaTime);
     }
 
     if (Cast<AShadowMonsterAI>(GetPawn())->IsStartHit)
     {
         //中断main action并接替ai的运动控制
-        //BehaviorTreeComp->StopTree(); 
+        BehaviorTreeComp->StopTree(); 
         if (BlackboardComp && BlackboardComp->GetKeyID("bCanMove") != FBlackboard::InvalidKey)
         {
             Blackboard->SetValueAsBool("bCanMove", false);

@@ -13,6 +13,7 @@
 #include "DekeyInteractableInterface.h"
 #include "Public/DirectorProxy.h"
 #include "hookPoint.h"
+#include "Public/DialogueWidget.h"
 #include "man.generated.h"
 
 UCLASS()
@@ -191,6 +192,26 @@ public:
 	void Riding(AActor* CurInteractingActor);
 
 	void EndRiding();
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "YourCategory")
+		USceneComponent* TargetPoint;
+
+	FVector TargetLoc;
+
+	UPROPERTY()
+		UDialogueWidget* MyDialogueUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+		TSubclassOf<UUserWidget> DialogueWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue")
+		TArray<FText> DialogueLines;
+
+	int32 CurrentLineIndex;
+	FTimerHandle DialogueTimerHandle;
+
+	void DisplayNextDialogueLine();
 
 
 private:

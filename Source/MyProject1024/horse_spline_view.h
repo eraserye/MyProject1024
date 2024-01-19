@@ -29,6 +29,9 @@ class MYPROJECT1024_API Ahorse_spline_view : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputMappingContext* DefaultMappingContext;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UNiagaraComponent* ParticleSystemComponent;
+
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* MoveAction;
@@ -48,6 +51,9 @@ class MYPROJECT1024_API Ahorse_spline_view : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* EatAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		class UInputAction* WindAction;
 	
 public:
 	// Sets default values for this character's properties
@@ -72,6 +78,8 @@ protected:
 
 	void Eat(const FInputActionValue& Value);
 	void EndEat(const FInputActionValue& Value);
+
+	void Wind(const FInputActionValue& Value);
 
 	void ApplyInitialFallVelocity();
 
@@ -164,6 +172,12 @@ public:
 	//float AnimPlayRate;
 	bool BeRiding;
 	AActor* Rider;
+
+
+	UMaterialParameterCollectionInstance* CollectionInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material Collection")
+		UMaterialParameterCollection* CollectionReference;
 
 
 private:
